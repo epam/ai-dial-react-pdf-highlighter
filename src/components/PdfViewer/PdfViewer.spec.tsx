@@ -10,7 +10,8 @@ import {
 
 import { PDFHighlightViewer, ZoomMode } from '@epam/pdf-highlighter-kit';
 
-import { PDFViewer, type PdfViewerApi } from './PdfViewer';
+import type { PdfViewerApi } from '@/models/pdf-viewer.models';
+import { PDFViewer } from './PdfViewer';
 
 vi.mock('@epam/pdf-highlighter-kit', () => ({
   PDFHighlightViewer: vi.fn().mockImplementation(() => ({

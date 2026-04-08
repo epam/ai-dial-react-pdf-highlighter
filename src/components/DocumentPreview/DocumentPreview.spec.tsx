@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DocumentPreviewCacheProvider } from '@/components/DocumentPreviewCacheContext/DocumentPreviewCacheContext';
+import { DocumentCacheProvider } from '@/context/documentCacheProvider';
 import { PDFViewer } from '@/components/PdfViewer/PdfViewer';
 import { DocumentPreview } from './DocumentPreview';
 
@@ -37,9 +37,9 @@ function renderDocumentPreview(
   props: Partial<Parameters<typeof DocumentPreview>[0]> = {},
 ) {
   return render(
-    <DocumentPreviewCacheProvider>
+    <DocumentCacheProvider>
       <DocumentPreview {...defaultProps} {...props} />
-    </DocumentPreviewCacheProvider>,
+    </DocumentCacheProvider>,
   );
 }
 

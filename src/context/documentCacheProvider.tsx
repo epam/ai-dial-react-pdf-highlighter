@@ -1,39 +1,19 @@
 import {
-  createContext,
   type FC,
   type PropsWithChildren,
   useCallback,
-  useContext,
   useEffect,
   useRef,
 } from 'react';
 
-/** Internal cache record for a loaded or in-flight document blob. */
-interface CacheEntry {
-  /** In-flight loader promise used for request coalescing. */
-  promise?: Promise<Blob>;
-  /** Resolved blob value when loading succeeded. */
-  file?: Blob;
-  /** Last touch timestamp used for TTL checks and LRU ordering. */
-  timestamp: number;
-}
+import type { CacheEntry } from '@/models/document-cache.models';
+
+import { DocumentPreviewCacheContext } from '@/context/documentCacheContext';
 
 const DEFAULT_TTL_MS = 20 * 60 * 1000; // 20 minutes
 const DEFAULT_MAX_ENTRIES = 20;
 
-interface DocumentPreviewCacheContextValue {
-  /**
-   * Returns a cached file when available, or invokes `loader` and caches the result.
-   */
-  getFile: (url: string, loader: () => Promise<Blob>) => Promise<Blob>;
-  /** Clears all cached entries immediately. */
-  clearCache: () => void;
-}
-
-const DocumentPreviewCacheContext =
-  createContext<DocumentPreviewCacheContextValue | null>(null);
-
-interface DocumentPreviewCacheProviderProps extends PropsWithChildren {
+interface DocumentCacheProviderProps extends PropsWithChildren {
   /** TTL in milliseconds. Default: 1 200 000 ms (20 min) */
   ttlMs?: number;
   /** Maximum number of cached entries (LRU). Default: 20 */
@@ -46,9 +26,7 @@ interface DocumentPreviewCacheProviderProps extends PropsWithChildren {
  * Wrap the subtree that renders `DocumentPreview` to avoid repeated network requests
  * for frequently opened files.
  */
-export const DocumentPreviewCacheProvider: FC<
-  DocumentPreviewCacheProviderProps
-> = ({
+export const DocumentCacheProvider: FC<DocumentCacheProviderProps> = ({
   children,
   ttlMs = DEFAULT_TTL_MS,
   maxEntries = DEFAULT_MAX_ENTRIES,
@@ -123,14 +101,4 @@ export const DocumentPreviewCacheProvider: FC<
       {children}
     </DocumentPreviewCacheContext.Provider>
   );
-};
-
-/**
- * Returns the current document preview cache context.
- *
- * When used outside `DocumentPreviewCacheProvider`, returns `null`.
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export const useDocumentPreviewCache = () => {
-  return useContext(DocumentPreviewCacheContext);
 };

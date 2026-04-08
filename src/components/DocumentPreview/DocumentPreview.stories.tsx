@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useRef, useState } from 'react';
 
-import { DocumentPreviewCacheProvider } from '@/components/DocumentPreviewCacheContext/DocumentPreviewCacheContext';
+import { DocumentCacheProvider } from '@/context/documentCacheProvider';
 import { PageThumbnail } from '@/components/PageThumbnail/PageThumbnail';
-import type { PdfViewerApi } from '@/components/PdfViewer/PdfViewer';
+import type { PdfViewerApi } from '@/models/pdf-viewer.models';
 import { sampleHighlights } from '@/constants/storybook';
 import { DocumentPreview } from './DocumentPreview';
 
@@ -32,9 +32,9 @@ const meta: Meta<typeof DocumentPreview> = {
   },
   decorators: [
     (Story) => (
-      <DocumentPreviewCacheProvider>
+      <DocumentCacheProvider>
         <Story />
-      </DocumentPreviewCacheProvider>
+      </DocumentCacheProvider>
     ),
   ],
   argTypes: {
@@ -242,7 +242,7 @@ const ThumbnailGenerationDemo = (
   };
 
   return (
-    <DocumentPreviewCacheProvider>
+    <DocumentCacheProvider>
       <div className="flex flex-row h-[700px] gap-3 bg-layer-1">
         <div className="flex flex-col overflow-y-auto gap-2 bg-layer-2 rounded-sm flex-shrink-0 p-2">
           {thumbnails.size === 0 && (
@@ -272,7 +272,7 @@ const ThumbnailGenerationDemo = (
           />
         </div>
       </div>
-    </DocumentPreviewCacheProvider>
+    </DocumentCacheProvider>
   );
 };
 
