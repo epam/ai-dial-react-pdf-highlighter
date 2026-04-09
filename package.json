@@ -9,6 +9,10 @@
     "node": ">=22.2.0",
     "npm": ">=10.7.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/epam/ai-dial-react-pdf-highlighter"
+  },
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
