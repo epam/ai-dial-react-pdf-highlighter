@@ -36,7 +36,7 @@
     "typecheck": "tsc --noEmit",
     "test:run": "vitest run",
     "verify:agent-hook": "npm run typecheck && npm run lint:check && npm run test:run",
-    "format": "prettier --check . --ignore-path .prettierignore-check",
+    "format": "prettier --check .",
     "format-fix": "prettier --write .",
     "preview": "vite preview",
     "storybook": "concurrently \"npm run storybook:css\" \"storybook dev -p 6007\"",
