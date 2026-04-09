@@ -36,7 +36,7 @@
     "typecheck": "tsc --noEmit",
     "test:run": "vitest run",
     "verify:agent-hook": "npm run typecheck && npm run lint:check && npm run test:run",
-    "format": "prettier --check .",
+    "format": "prettier --check . --ignore-path .prettierignore-check",
     "format-fix": "prettier --write .",
     "preview": "vite preview",
     "storybook": "concurrently \"npm run storybook:css\" \"storybook dev -p 6007\"",
@@ -54,7 +54,7 @@
     ]
   },
   "peerDependencies": {
-    "@epam/ai-dial-ui-kit": ">=0.8.0",
+    "@epam/ai-dial-ui-kit": ">=0.8.0-0",
     "@epam/pdf-highlighter-kit": ">=0.0.13",
     "@tabler/icons-react": "^3.0.0",
     "pdfjs-dist": ">=4.0.0",
