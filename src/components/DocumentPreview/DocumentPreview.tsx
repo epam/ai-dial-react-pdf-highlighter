@@ -14,34 +14,12 @@ import {
   IconMinus,
   IconPlus,
 } from '@tabler/icons-react';
-import {
-  type FC,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { type FC, type ReactNode } from 'react';
 
-import { useDocumentPreviewCache } from '@/components/DocumentPreviewCacheContext/DocumentPreviewCacheContext';
 import { PdfPreviewLoader } from '@/components/PdfPreviewLoader/PdfPreviewLoader';
-import type { PdfViewerApi } from '@/components/PdfViewer/PdfViewer';
+import type { PdfViewerApi } from '@/models/pdf-viewer.models';
 import { PDFViewer } from '@/components/PdfViewer/PdfViewer';
-import {
-  AUTO_ZOOM_ID,
-  FIT_ZOOM_ID,
-  THUMBNAIL_BATCH_SIZE,
-  THUMBNAIL_IMAGE_OPTIONS,
-  ZOOM_OPTIONS,
-} from '@/constants/pdf-viewer.constants';
-import { isPdfFile } from '@/utils/isPdfFile';
-import { getStepZoomOptionValue } from '@/utils/pdf-viewer.utils';
-
-const BASE_ZOOM_SELECT_OPTIONS = ZOOM_OPTIONS.map((opt) => ({
-  value: opt.value,
-  label: opt.label,
-}));
+import { useDocumentPreview } from '@/hooks/useDocumentPreview';
 
 /**
  * Props for the high-level document preview component.
@@ -115,155 +93,31 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
   showLoaderOverlay = false,
   selectedPages,
 }) => {
-  const cache = useDocumentPreviewCache();
-  const viewerApiRef = useRef<PdfViewerApi | null>(null);
-  const [viewerReady, setViewerReady] = useState(false);
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isError, setIsError] = useState(false);
-  const [isLoading, setIsLoading] = useState<boolean | null>(null);
-  const [file, setFile] = useState<Blob | null>(null);
-  const [zoom, setZoom] = useState(AUTO_ZOOM_ID);
-
-  const isPdfFileByName = useMemo(() => {
-    let value = fileName || fileUrl;
-    if (!fileName) {
-      try {
-        value = new URL(fileUrl).pathname;
-      } catch {
-        value = fileUrl.split('?')[0].split('#')[0];
-      }
-    }
-    return isPdfFile({ name: value.toLowerCase() });
-  }, [fileName, fileUrl]);
-
-  const changeIndex = useCallback(
-    (dir: 1 | -1) => {
-      setCurrentIndex(
-        (currentIndex + dir + highlights.length) % highlights.length,
-      );
-    },
-    [currentIndex, highlights.length],
-  );
-
-  const handleZoomChange = useCallback(
-    (dir?: 1 | -1) => {
-      const api = viewerApiRef.current;
-      if (!api?.getZoom || !dir) {
-        return;
-      }
-      setZoom(getStepZoomOptionValue(zoom, dir, api.getZoom()));
-    },
-    [zoom],
-  );
-
-  const zoomSelectOptions = useMemo(() => {
-    const isPreset =
-      zoom === AUTO_ZOOM_ID ||
-      zoom === FIT_ZOOM_ID ||
-      ZOOM_OPTIONS.some((opt) => opt.value === zoom);
-    if (!isPreset) {
-      const num = parseFloat(zoom);
-      if (!Number.isNaN(num) && num > 0) {
-        return [
-          ...BASE_ZOOM_SELECT_OPTIONS,
-          { value: zoom, label: `${Math.round(num * 100)}%` },
-        ];
-      }
-    }
-    return BASE_ZOOM_SELECT_OPTIONS;
-  }, [zoom]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setIsLoading(true);
-    setIsError(false);
-    setFile(null);
-    setViewerReady(false);
-    viewerApiRef.current = null;
-
-    if (!isPdfFileByName) {
-      setIsError(true);
-      setIsLoading(false);
-      return;
-    }
-
-    const load = async () => {
-      try {
-        const loaded = await (cache
-          ? cache.getFile(fileUrl, () => loadFileCb(fileUrl))
-          : loadFileCb(fileUrl));
-        if (!cancelled) {
-          setFile(loaded);
-        }
-      } catch {
-        if (!cancelled) {
-          setIsError(true);
-          setFile(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [fileUrl, cache, loadFileCb, isPdfFileByName]);
-
-  const handleViewerReady = useCallback(
-    (api: PdfViewerApi) => {
-      viewerApiRef.current = api;
-      setViewerReady(true);
-      onViewerReady?.(api);
-    },
-    [onViewerReady],
-  );
-
-  useEffect(() => {
-    const pageNumbers = thumbnailPageNumbers ?? [];
-    const getThumbnails = viewerApiRef.current?.getThumbnailsDataUrl;
-    if (
-      !pageNumbers.length ||
-      !getThumbnails ||
-      !file ||
-      !onThumbnailsLoaded ||
-      !viewerReady
-    )
-      return;
-
-    let cancelled = false;
-
-    const runBatches = async () => {
-      const cumulative = new Map<number, string>();
-      for (let i = 0; i < pageNumbers.length; i += THUMBNAIL_BATCH_SIZE) {
-        if (cancelled) break;
-        const batch = pageNumbers.slice(i, i + THUMBNAIL_BATCH_SIZE);
-        try {
-          const batchMap = await getThumbnails(batch, THUMBNAIL_IMAGE_OPTIONS);
-          if (cancelled) break;
-          batchMap.forEach((url, page) => cumulative.set(page, url));
-          onThumbnailsLoaded(new Map(cumulative));
-        } catch (err) {
-          console.warn('Thumbnail batch load failed:', err);
-          break;
-        }
-      }
-    };
-
-    runBatches();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [thumbnailPageNumbers, file, onThumbnailsLoaded, viewerReady]);
-
-  const shouldShowPreviewLoader =
-    !isError && (Boolean(isLoading) || showLoaderOverlay);
+  const {
+    file,
+    isError,
+    isSupportedFile,
+    activeHighlightIndex,
+    zoom,
+    setZoom,
+    zoomSelectOptions,
+    showLoader,
+    changeIndex,
+    handleZoomChange,
+    handleViewerReady,
+  } = useDocumentPreview({
+    fileUrl,
+    fileName,
+    loadFileCb,
+    highlights,
+    selectedPageNumber,
+    onTotalPagesChange,
+    thumbnailPageNumbers,
+    onThumbnailsLoaded,
+    onViewerReady,
+    showLoaderOverlay,
+    selectedPages,
+  });
 
   return (
     <div
@@ -291,7 +145,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
                 {occurrencesLabel ?? 'Occurrences'}:
                 <span className="pl-0.5 min-w-3 inline-block text-right">
                   {highlights.length > 0
-                    ? `${currentIndex + 1}/${highlights.length}`
+                    ? `${activeHighlightIndex + 1}/${highlights.length}`
                     : '0'}
                 </span>
               </span>
@@ -364,7 +218,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
           <PDFViewer
             pdf={file}
             highlights={highlights}
-            selectedHighlightId={highlights[currentIndex]?.id}
+            selectedHighlightId={highlights[activeHighlightIndex]?.id}
             selectedPageNumber={selectedPageNumber}
             zoom={zoom}
             onTotalPagesChange={onTotalPagesChange}
@@ -374,9 +228,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
           />
         )}
 
-        {shouldShowPreviewLoader && (
-          <PdfPreviewLoader className="absolute inset-0 z-10" />
-        )}
+        {showLoader && <PdfPreviewLoader className="absolute inset-0 z-10" />}
 
         {isError && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-layer-3">
@@ -387,7 +239,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
                 className="text-secondary"
               />
               <div className="text-center dial-small-text whitespace-pre-wrap">
-                {!isPdfFileByName && unsupportedLabel
+                {!isSupportedFile && unsupportedLabel
                   ? unsupportedLabel
                   : (errorLabel ?? 'Failed to load document.')}
               </div>
