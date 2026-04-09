@@ -57,7 +57,7 @@ Do not use `grep`, `glob`, `find`, or similar file system tools to discover comp
 | ---------- | -------------------------------- | ----------------------------------- |
 | Components | `src/components/<Name>/`         | Component + stories + spec          |
 | Constants  | `src/constants/`                 | `pdf-viewer.constants.ts`           |
-| Utilities  | `src/utils/`                     | `isPdfFile`, `pdf-viewer.utils`     |
+| Utilities  | `src/utils/`                     | `pdf-viewer.utils`                  |
 | Public API | `src/index.ts`                   | All public exports                  |
 | Styles     | `src/styles/tailwind-entry.scss` | Tailwind entry; compiled to `dist/` |
 | MCP server | `src/mcp/`                       | Built to `dist/mcp-server.cjs`      |

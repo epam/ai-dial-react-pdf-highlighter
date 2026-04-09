@@ -96,18 +96,25 @@ function App() {
 
 ## Exported API
 
-Main exports:
+### Components
 
-- `PDFViewer`
-- `DocumentPreview`
-- `DocumentPreviewCacheProvider`
-- `useDocumentPreviewCache`
-- `PdfPreviewLoader`
-- `PageThumbnail`
-- `isPdfFile`
-- `getStepZoomOptionValue`
+| Name                           | Description                                                                                                                                          |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PDFViewer`                    | Low-level PDF viewer component wrapping `@epam/pdf-highlighter-kit`. Accepts `PdfViewerProps`.                                                       |
+| `DocumentPreview`              | High-level document preview with built-in loading, zoom, highlight navigation, and thumbnail support. Accepts `DocumentPreviewProps`.                |
+| `DocumentPreviewCacheProvider` | Context provider that enables cross-component sharing of loaded PDF blobs. Wrap your app (or subtree) with this to avoid re-fetching the same files. |
+| `PdfPreviewLoader`             | Standalone loading/error state overlay used internally by `DocumentPreview`. Accepts `PdfPreviewLoaderProps`.                                        |
+| `PageThumbnail`                | Renders a single PDF page as a thumbnail image. Accepts `PageThumbnailProps`.                                                                        |
 
-There are also zoom-related constants and types exported from the package entrypoint.
+### Hooks
+
+#### `useDocumentPreview(options: UseDocumentPreviewOptions): UseDocumentPreviewResult`
+
+Encapsulates all logic for a document preview: file fetching (with optional cache integration), highlight-index navigation, zoom state, and thumbnail generation. Use it to build a fully custom preview UI without taking on `DocumentPreview`'s default layout.
+
+#### `useDocumentPreviewCache(): DocumentPreviewCacheContext | null`
+
+Returns the document preview cache context provided by `DocumentPreviewCacheProvider`. Returns `null` when called outside the provider. Consumed internally by `useDocumentPreview` to avoid re-fetching files already in the cache.
 
 ## Styles
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getStepZoomOptionValue } from './pdf-viewer.utils';
+import { getStepZoomOptionValue, isPdfFile } from './pdf-viewer.utils';
 
 describe('getStepZoomOptionValue', () => {
   it('uses the next defined zoom option when zooming in from a non-option zoom', () => {
@@ -24,5 +24,24 @@ describe('getStepZoomOptionValue', () => {
   it('clamps to the smallest and largest defined zoom options', () => {
     expect(getStepZoomOptionValue('0.5', -1, 0.5)).toBe('0.5');
     expect(getStepZoomOptionValue('3', 1, 3)).toBe('3');
+  });
+});
+
+describe('isPdfFile', () => {
+  it('returns true for a file with a .pdf extension', () => {
+    expect(isPdfFile('document.pdf')).toBe(true);
+  });
+
+  it('returns true for a file with application/pdf content type', () => {
+    expect(isPdfFile(undefined, 'application/pdf')).toBe(true);
+  });
+
+  it('returns false for a file without a .pdf extension or application/pdf content type', () => {
+    expect(isPdfFile('image.png', 'image/png')).toBe(false);
+  });
+
+  it('handles null and undefined values gracefully', () => {
+    expect(isPdfFile(null, null)).toBe(false);
+    expect(isPdfFile(undefined, undefined)).toBe(false);
   });
 });

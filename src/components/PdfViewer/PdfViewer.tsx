@@ -1,5 +1,5 @@
 import { mergeClasses } from '@epam/ai-dial-ui-kit';
-import type { PDFSource, ThumbnailOptions } from '@epam/pdf-highlighter-kit';
+import type { PDFSource } from '@epam/pdf-highlighter-kit';
 import {
   type InputHighlightData,
   PDFHighlightViewer,
@@ -8,30 +8,7 @@ import {
 import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 
 import { AUTO_ZOOM_ID, FIT_ZOOM_ID } from '@/constants/pdf-viewer.constants';
-
-/**
- * Imperative API exposed by {@link PDFViewer} through the `onViewerReady` callback.
- */
-export interface PdfViewerApi {
-  /**
-   * Generates data URLs for requested pages.
-   *
-   * @param pageNumbers 1-based page numbers to render thumbnails for.
-   * @param options Rendering options forwarded to pdf-highlighter-kit.
-   */
-  getThumbnailsDataUrl: (
-    pageNumbers: number[],
-    options?: ThumbnailOptions,
-  ) => Promise<Map<number, string>>;
-  /** Increases current zoom level by one viewer step. */
-  zoomIn: () => void;
-  /** Decreases current zoom level by one viewer step. */
-  zoomOut: () => void;
-  /** Returns the current numeric zoom value. */
-  getZoom: () => number;
-  /** Navigates to a specific 1-based page number. */
-  navigateToPage: (page: number) => void;
-}
+import type { PdfViewerApi } from '@/models/pdf-viewer.models';
 
 /**
  * Props for the low-level PDF rendering component.

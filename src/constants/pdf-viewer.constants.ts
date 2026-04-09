@@ -1,10 +1,7 @@
+import type { ZoomOption } from '@/models/pdf-viewer.models';
+
 export const AUTO_ZOOM_ID = 'auto';
 export const FIT_ZOOM_ID = 'page-fit';
-
-export interface ZoomOption {
-  value: string;
-  label: string;
-}
 
 export const ZOOM_OPTIONS: ZoomOption[] = [
   { value: AUTO_ZOOM_ID, label: 'Auto' },
@@ -25,3 +22,6 @@ export const THUMBNAIL_IMAGE_OPTIONS = {
 };
 
 export const THUMBNAIL_BATCH_SIZE = 15;
+
+export const CONTENT_TYPE_PDF = 'application/pdf';
+export const FILE_EXTENSION_PDF = '.pdf';

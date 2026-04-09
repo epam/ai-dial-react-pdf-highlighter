@@ -1,4 +1,8 @@
-import { ZOOM_OPTIONS } from '@/constants/pdf-viewer.constants';
+import {
+  CONTENT_TYPE_PDF,
+  FILE_EXTENSION_PDF,
+  ZOOM_OPTIONS,
+} from '@/constants/pdf-viewer.constants';
 
 const NUMERIC_ZOOM_OPTIONS = ZOOM_OPTIONS.filter(({ value }) => {
   const zoomValue = Number.parseFloat(value);
@@ -40,3 +44,16 @@ export const getStepZoomOptionValue = (
     ) ?? NUMERIC_ZOOM_OPTIONS[0]
   ).value;
 };
+
+export function isPdfFile(
+  name?: string | null | undefined,
+  contentType?: string | null | undefined,
+): boolean {
+  const normalizedName = (name ?? '').toLowerCase();
+  const normalizedContentType = (contentType ?? '').toLowerCase();
+
+  return (
+    normalizedContentType === CONTENT_TYPE_PDF ||
+    normalizedName.endsWith(FILE_EXTENSION_PDF)
+  );
+}
