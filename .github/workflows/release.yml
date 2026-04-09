@@ -2,7 +2,7 @@ name: Release Workflow
 
 on:
   push:
-    branches: [main, release-*]
+    branches: [development, release-*]
 
 permissions:
   contents: write
@@ -14,3 +14,4 @@ jobs:
     secrets: inherit
     with:
       node-version: 24
+      docker-build-enabled: false
