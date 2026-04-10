@@ -58,12 +58,17 @@
     ]
   },
   "peerDependencies": {
-    "@epam/ai-dial-ui-kit": ">=0.8.0-0",
+    "@epam/ai-dial-ui-kit": ">=0.8.0-0 || >=0.9.0-rc.0",
     "@epam/pdf-highlighter-kit": ">=0.0.13",
     "@tabler/icons-react": "^3.0.0",
     "pdfjs-dist": ">=4.0.0",
     "react": ">=18",
     "react-dom": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "@tabler/icons-react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.3",
