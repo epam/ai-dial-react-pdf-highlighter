@@ -1,2 +1,7 @@
 #!/usr/bin/env sh
+
+if [ "$CI" = "true" ]; then
+	exit 0
+fi
+
 npm run verify:agent-hook && npm run format
