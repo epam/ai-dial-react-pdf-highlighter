@@ -218,7 +218,9 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
           <PDFViewer
             pdf={file}
             highlights={highlights}
-            selectedHighlightId={highlights[activeHighlightIndex]?.id}
+            selectedHighlightId={
+              showOccurrences ? highlights[activeHighlightIndex]?.id : undefined
+            }
             selectedPageNumber={selectedPageNumber}
             zoom={zoom}
             onTotalPagesChange={onTotalPagesChange}

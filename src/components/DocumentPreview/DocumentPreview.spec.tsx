@@ -151,6 +151,23 @@ describe('DocumentPreview', () => {
     expect(screen.queryByText(/Occurrences/)).not.toBeInTheDocument();
   });
 
+  it('does not pass occurrence selectedHighlightId when showOccurrences is false', async () => {
+    const highlights = [
+      { id: 'h1', pageNumber: 1, rects: [] },
+      { id: 'h2', pageNumber: 2, rects: [] },
+    ] as unknown as Parameters<typeof DocumentPreview>[0]['highlights'];
+
+    renderDocumentPreview({ highlights, showOccurrences: false });
+
+    const mockPDFViewer = vi.mocked(PDFViewer);
+    await waitFor(() => expect(mockPDFViewer).toHaveBeenCalled());
+
+    const lastProps = () =>
+      mockPDFViewer.mock.calls[mockPDFViewer.mock.calls.length - 1][0];
+
+    expect(lastProps().selectedHighlightId).toBeUndefined();
+  });
+
   it('shows the custom title in the toolbar', () => {
     renderDocumentPreview({ title: 'Annual Report 2025' });
 

@@ -223,6 +223,33 @@ export const NoOccurrencesBar: Story = {
   ],
 };
 
+/** Same as hiding the occurrences bar, but with several highlights (for dimming / selection behaviour). */
+export const NoOccurrencesBarWithHighlights: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`showOccurrences=false` with multiple `highlights` — useful to verify that the viewer' +
+          ' does not treat a hidden “current occurrence” as selected.',
+      },
+    },
+  },
+  args: {
+    fileUrl: SAMPLE_PDF_URL,
+    loadFileCb: (url) => fetch(url).then((r) => r.blob()),
+    highlights: sampleHighlights,
+    showOccurrences: false,
+    title: 'No occurrences bar, multiple highlights',
+  },
+  decorators: [
+    (Story) => (
+      <div className="h-[700px]">
+        <Story />
+      </div>
+    ),
+  ],
+};
+
 /**
  * Demonstrates incremental thumbnail generation via `thumbnailPageNumbers` +
  * `onThumbnailsLoaded`. The viewer renders pages 1–5 and thumbnails are
