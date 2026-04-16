@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useEffect } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DocumentCacheProvider } from '@/context/documentCacheProvider';
@@ -17,10 +18,14 @@ const mockViewerApi = vi.hoisted(() => ({
 }));
 
 vi.mock('@/components/PdfViewer/PdfViewer', () => ({
-  // Simulates a ready viewer by calling onViewerReady synchronously.
+  // Simulates a ready viewer; defer onViewerReady so the parent is not updated
+  // during the mock's render (matches real async viewer init).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   PDFViewer: vi.fn((props: any) => {
-    props.onViewerReady?.(mockViewerApi);
+    const { onViewerReady } = props;
+    useEffect(() => {
+      onViewerReady?.(mockViewerApi);
+    }, [onViewerReady]);
     return null;
   }),
 }));

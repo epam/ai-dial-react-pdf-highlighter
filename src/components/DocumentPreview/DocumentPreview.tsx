@@ -128,7 +128,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
     >
       {fileName && (
         <DialEllipsisTooltip
-          className="dial-tiny-text text-secondary"
+          className="dial-tiny-text text-secondary !flex-none"
           text={fileName}
         />
       )}

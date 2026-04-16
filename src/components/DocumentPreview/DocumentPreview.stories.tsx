@@ -24,7 +24,7 @@ const meta: Meta<typeof DocumentPreview> = {
     docs: {
       description: {
         component: [
-          'High-level viewer with toolbar (zoom, occurrences, title). Fetches and caches the PDF',
+          'High-level viewer with optional `fileName`, toolbar (zoom, occurrences, title). Fetches and caches the PDF',
           'via the caller-supplied `loadFileCb`. Must be wrapped in `<DocumentPreviewCacheProvider>`.',
         ].join(' '),
       },
@@ -76,8 +76,8 @@ export const WithTitle: Story = {
     docs: {
       description: {
         story:
-          'Shows a document title in the centre of the toolbar, ellipsed when it' +
-          ' overflows.',
+          'Shows optional `fileName` above the toolbar and a document title in the centre,' +
+          ' ellipsed when either overflows.',
       },
     },
   },
@@ -85,6 +85,7 @@ export const WithTitle: Story = {
     fileUrl: SAMPLE_PDF_URL,
     loadFileCb: (url) => fetch(url).then((r) => r.blob()),
     highlights: [],
+    fileName: 'pdf_sample.pdf',
     title: 'PDF Techniques for WCAG 2.1',
   },
   decorators: [
