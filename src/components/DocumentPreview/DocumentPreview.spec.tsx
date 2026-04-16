@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useEffect } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DocumentCacheProvider } from '@/context/documentCacheProvider';
@@ -17,10 +18,14 @@ const mockViewerApi = vi.hoisted(() => ({
 }));
 
 vi.mock('@/components/PdfViewer/PdfViewer', () => ({
-  // Simulates a ready viewer by calling onViewerReady synchronously.
+  // Simulates a ready viewer; defer onViewerReady so the parent is not updated
+  // during the mock's render (matches real async viewer init).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   PDFViewer: vi.fn((props: any) => {
-    props.onViewerReady?.(mockViewerApi);
+    const { onViewerReady } = props;
+    useEffect(() => {
+      onViewerReady?.(mockViewerApi);
+    }, [onViewerReady]);
     return null;
   }),
 }));
@@ -149,6 +154,23 @@ describe('DocumentPreview', () => {
     renderDocumentPreview({ showOccurrences: false });
 
     expect(screen.queryByText(/Occurrences/)).not.toBeInTheDocument();
+  });
+
+  it('does not pass occurrence selectedHighlightId when showOccurrences is false', async () => {
+    const highlights = [
+      { id: 'h1', pageNumber: 1, rects: [] },
+      { id: 'h2', pageNumber: 2, rects: [] },
+    ] as unknown as Parameters<typeof DocumentPreview>[0]['highlights'];
+
+    renderDocumentPreview({ highlights, showOccurrences: false });
+
+    const mockPDFViewer = vi.mocked(PDFViewer);
+    await waitFor(() => expect(mockPDFViewer).toHaveBeenCalled());
+
+    const lastProps = () =>
+      mockPDFViewer.mock.calls[mockPDFViewer.mock.calls.length - 1][0];
+
+    expect(lastProps().selectedHighlightId).toBeUndefined();
   });
 
   it('shows the custom title in the toolbar', () => {
