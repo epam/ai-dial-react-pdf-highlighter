@@ -11,7 +11,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # Final image — only the built artefacts
-FROM alpine:3.21 AS dist
+FROM node:24-alpine AS dist
 
 WORKDIR /dist
 COPY --from=builder /app/dist ./dist
