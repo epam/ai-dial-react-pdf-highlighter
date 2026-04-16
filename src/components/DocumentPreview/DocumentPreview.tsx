@@ -127,10 +127,12 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
       )}
     >
       {fileName && (
-        <DialEllipsisTooltip
-          className="dial-tiny-text text-secondary !flex-none"
-          text={fileName}
-        />
+        <div className="shrink-0 min-h-0 w-full">
+          <DialEllipsisTooltip
+            className="dial-tiny-text text-secondary"
+            text={fileName}
+          />
+        </div>
       )}
       <div
         className={mergeClasses(
