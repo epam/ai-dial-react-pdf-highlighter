@@ -1,6 +1,6 @@
 {
   "name": "@epam/ai-dial-react-pdf-highlighter",
-  "version": "0.2.0-rc.5",
+  "version": "0.2.0-rc.6",
   "type": "module",
   "license": "Apache-2.0",
   "description": "React components for PDF viewing and highlighting, built on @epam/pdf-highlighter-kit",
