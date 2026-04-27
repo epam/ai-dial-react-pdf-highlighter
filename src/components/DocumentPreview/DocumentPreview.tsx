@@ -6,7 +6,10 @@ import {
   mergeClasses,
   SelectSize,
 } from '@epam/ai-dial-ui-kit';
-import type { InputHighlightData } from '@epam/pdf-highlighter-kit';
+import type {
+  InputHighlightData,
+  ViewerOptions,
+} from '@epam/pdf-highlighter-kit';
 import {
   IconAlertTriangle,
   IconChevronDown,
@@ -67,6 +70,18 @@ export interface DocumentPreviewProps {
   showLoaderOverlay?: boolean;
   /** Restricts viewer loading to selected pages only. */
   selectedPages?: number[];
+  /**
+   * Highlight id to navigate to. When `showOccurrences` is true the internal
+   * occurrence counter takes precedence; pass this when `showOccurrences` is
+   * false to drive navigation externally (e.g. from a results table).
+   */
+  selectedHighlightId?: string;
+  /**
+   * Override or extend low-level viewer initialization options passed to `PDFViewer`.
+   * Values are merged on top of the defaults (`enableTextSelection: true`,
+   * `enableVirtualScrolling: true`, `bboxOrigin: 'top-left'`).
+   */
+  viewerOptions?: ViewerOptions;
 }
 
 /**
@@ -92,6 +107,8 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
   onViewerReady,
   showLoaderOverlay = false,
   selectedPages,
+  selectedHighlightId,
+  viewerOptions,
 }) => {
   const {
     file,
@@ -221,7 +238,9 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
             pdf={file}
             highlights={highlights}
             selectedHighlightId={
-              showOccurrences ? highlights[activeHighlightIndex]?.id : undefined
+              showOccurrences
+                ? highlights[activeHighlightIndex]?.id
+                : selectedHighlightId
             }
             selectedPageNumber={selectedPageNumber}
             zoom={zoom}
@@ -229,6 +248,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
             onViewerReady={handleViewerReady}
             containerClassName={pdfViewerClassName}
             selectedPages={selectedPages}
+            viewerOptions={viewerOptions}
           />
         )}
 

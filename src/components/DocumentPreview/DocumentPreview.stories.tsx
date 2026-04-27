@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { DialButton, ElementSize, mergeClasses } from '@epam/ai-dial-ui-kit';
+import type { InputHighlightData } from '@epam/pdf-highlighter-kit';
 import { useRef, useState } from 'react';
 
 import { DocumentCacheProvider } from '@/context/documentCacheProvider';
@@ -324,4 +326,223 @@ export const ThumbnailGeneration: Story = {
     title: 'Thumbnail Generation Demo',
     thumbnailPageNumbers: [1, 2, 3],
   },
+};
+
+// =============================================================================
+// Document Switcher Demo
+// Reproduces the scenario where a table of results drives the PDF preview:
+// clicking a row switches the document and navigates to a specific highlighted
+// page.
+// =============================================================================
+
+const DOC_1_URL = '/pdf_sample.pdf';
+// Same underlying PDF, different URL so the cache treats it as a separate file
+// and re-initialises the viewer — identical to a real two-document scenario.
+const DOC_2_URL = '/pdf_sample.pdf?doc=2';
+
+const doc1Highlights: InputHighlightData[] = [
+  {
+    id: 'doc1-h1',
+    bboxes: [{ x1: 180, y1: 110, x2: 340, y2: 130, page: 1 }],
+    style: { backgroundColor: '#ff6b6b', opacity: 0.45 },
+    label: 'Doc 1 – p1',
+    labelStyle: {
+      fontSize: '10px',
+      backgroundColor: 'white',
+      padding: '1px 3px',
+      borderRadius: '2px',
+      whiteSpace: 'nowrap',
+    },
+    isLabelScalable: true,
+  },
+  {
+    id: 'doc1-h2',
+    bboxes: [{ x1: 35, y1: 263, x2: 580, y2: 298, page: 2 }],
+    style: { backgroundColor: '#4ecdc4', opacity: 0.45 },
+    label: 'Doc 1 – p2',
+    labelStyle: {
+      fontSize: '10px',
+      backgroundColor: 'white',
+      padding: '1px 3px',
+      borderRadius: '2px',
+      whiteSpace: 'nowrap',
+    },
+    isLabelScalable: true,
+  },
+  {
+    id: 'doc1-h3',
+    bboxes: [{ x1: 35, y1: 400, x2: 205, y2: 410, page: 3 }],
+    style: { backgroundColor: '#ffe66d', opacity: 0.45 },
+    label: 'Doc 1 – p3',
+    labelStyle: {
+      fontSize: '10px',
+      backgroundColor: 'white',
+      padding: '1px 3px',
+      borderRadius: '2px',
+      whiteSpace: 'nowrap',
+    },
+    isLabelScalable: true,
+  },
+];
+
+const doc2Highlights: InputHighlightData[] = [
+  {
+    id: 'doc2-h1',
+    bboxes: [{ x1: 105, y1: 200, x2: 345, y2: 220, page: 1 }],
+    style: { backgroundColor: '#9d50ff', opacity: 0.45 },
+    label: 'Doc 2 – p1',
+    labelStyle: {
+      fontSize: '10px',
+      backgroundColor: 'white',
+      padding: '1px 3px',
+      borderRadius: '2px',
+      whiteSpace: 'nowrap',
+    },
+    isLabelScalable: true,
+  },
+  {
+    id: 'doc2-h2',
+    bboxes: [{ x1: 35, y1: 298, x2: 195, y2: 360, page: 2 }],
+    style: { backgroundColor: '#ff8c00', opacity: 0.45 },
+    label: 'Doc 2 – p2',
+    labelStyle: {
+      fontSize: '10px',
+      backgroundColor: 'white',
+      padding: '1px 3px',
+      borderRadius: '2px',
+      whiteSpace: 'nowrap',
+    },
+    isLabelScalable: true,
+  },
+  {
+    id: 'doc2-h3',
+    bboxes: [{ x1: 125, y1: 700, x2: 320, y2: 715, page: 1 }],
+    style: { backgroundColor: '#03c04a', opacity: 0.45 },
+    label: 'Doc 2 – p1 (2nd)',
+    labelStyle: {
+      fontSize: '10px',
+      backgroundColor: 'white',
+      padding: '1px 3px',
+      borderRadius: '2px',
+      whiteSpace: 'nowrap',
+    },
+    isLabelScalable: true,
+  },
+];
+
+interface TableRow {
+  label: string;
+  fileUrl: string;
+  highlightId: string;
+  highlights: InputHighlightData[];
+}
+
+const TABLE_ROWS: TableRow[] = [
+  {
+    label: 'Document 1 — Page 1',
+    fileUrl: DOC_1_URL,
+    highlightId: 'doc1-h1',
+    highlights: doc1Highlights,
+  },
+  {
+    label: 'Document 1 — Page 2',
+    fileUrl: DOC_1_URL,
+    highlightId: 'doc1-h2',
+    highlights: doc1Highlights,
+  },
+  {
+    label: 'Document 1 — Page 3',
+    fileUrl: DOC_1_URL,
+    highlightId: 'doc1-h3',
+    highlights: doc1Highlights,
+  },
+  {
+    label: 'Document 2 — Page 1',
+    fileUrl: DOC_2_URL,
+    highlightId: 'doc2-h1',
+    highlights: doc2Highlights,
+  },
+  {
+    label: 'Document 2 — Page 2',
+    fileUrl: DOC_2_URL,
+    highlightId: 'doc2-h2',
+    highlights: doc2Highlights,
+  },
+  {
+    label: 'Document 2 — Page 1 (2nd hit)',
+    fileUrl: DOC_2_URL,
+    highlightId: 'doc2-h3',
+    highlights: doc2Highlights,
+  },
+];
+
+const DocumentSwitcherDemoComponent = () => {
+  const [activeRow, setActiveRow] = useState<TableRow>(TABLE_ROWS[0]);
+
+  // Strip any query param so both "documents" fetch the same physical file.
+  const loadFileCb = (url: string) =>
+    fetch(url.split('?')[0]).then((r) => r.blob());
+
+  return (
+    <DocumentCacheProvider>
+      <div className="flex h-[700px] gap-0 bg-layer-1">
+        {/* Left panel — simulated results table */}
+        <div className="flex flex-col shrink-0 w-64 border-r border-divider bg-layer-2 overflow-y-auto p-2 gap-1">
+          <p className="dial-tiny-text text-secondary px-2 py-1 uppercase tracking-wide">
+            Search results
+          </p>
+          {TABLE_ROWS.map((row) => (
+            <DialButton
+              key={`${row.fileUrl}::${row.highlightId}`}
+              size={ElementSize.Small}
+              label={row.label}
+              className={mergeClasses(
+                'w-full !justify-start text-left px-2 py-1.5 rounded',
+                activeRow.highlightId === row.highlightId &&
+                  activeRow.fileUrl === row.fileUrl
+                  ? 'bg-accent-primary-alpha text-accent-primary'
+                  : 'hover:bg-layer-4',
+              )}
+              onClick={() => setActiveRow(row)}
+            />
+          ))}
+        </div>
+
+        {/* Right panel — PDF preview */}
+        <div className="flex-1 min-w-0">
+          <DocumentPreview
+            fileUrl={activeRow.fileUrl}
+            loadFileCb={loadFileCb}
+            highlights={activeRow.highlights}
+            selectedHighlightId={activeRow.highlightId}
+            showOccurrences={false}
+            title={
+              activeRow.fileUrl === DOC_1_URL ? 'Document 1' : 'Document 2'
+            }
+          />
+        </div>
+      </div>
+    </DocumentCacheProvider>
+  );
+};
+
+/**
+ * Simulates an external results table driving the PDF preview.
+ *
+ * Clicking a row switches the document (or stays on the same one) and
+ * navigates to a specific highlighted page.
+ */
+export const DocumentSwitcher: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Simulates an external results table driving the PDF preview. ' +
+          'Clicking a row switches the active document and navigates to a specific highlighted page. ',
+      },
+    },
+  },
+  render: () => <DocumentSwitcherDemoComponent />,
+  decorators: [],
+  args: {} as never,
 };
