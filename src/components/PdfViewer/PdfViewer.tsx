@@ -1,5 +1,5 @@
 import { mergeClasses } from '@epam/ai-dial-ui-kit';
-import type { PDFSource } from '@epam/pdf-highlighter-kit';
+import type { PDFSource, ViewerOptions } from '@epam/pdf-highlighter-kit';
 import {
   type InputHighlightData,
   PDFHighlightViewer,
@@ -34,6 +34,12 @@ export interface PdfViewerProps {
   onViewerReady?: (api: PdfViewerApi) => void;
   /** Optional list of pages to load instead of the full document. */
   selectedPages?: number[];
+  /**
+   * Override or extend low-level viewer initialization options.
+   * Values are merged on top of the defaults (`enableTextSelection: true`,
+   * `enableVirtualScrolling: true`, `bboxOrigin: 'top-left'`).
+   */
+  viewerOptions?: ViewerOptions;
 }
 
 /**
@@ -53,13 +59,17 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   onTotalPagesChange,
   onViewerReady,
   selectedPages,
+  viewerOptions,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<PDFHighlightViewer | null>(null);
   const [isViewerReady, setIsViewerReady] = useState(false);
-  const [isHighlightInit, setIsHighlightInit] = useState(false);
+  // Becomes true after the first zoomChanged event fires, meaning the initial
+  // AUTO / PAGE_FIT zoom has fully resolved before any highlight navigation.
+  const [isZoomApplied, setIsZoomApplied] = useState(false);
   const onTotalPagesChangeRef = useRef(onTotalPagesChange);
   const onViewerReadyRef = useRef(onViewerReady);
+  const viewerOptionsRef = useRef(viewerOptions);
 
   useEffect(() => {
     onTotalPagesChangeRef.current = onTotalPagesChange;
@@ -68,6 +78,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   useEffect(() => {
     onViewerReadyRef.current = onViewerReady;
   }, [onViewerReady]);
+
+  useEffect(() => {
+    viewerOptionsRef.current = viewerOptions;
+  }, [viewerOptions]);
 
   const goTo = useCallback(
     (id: string) => viewerRef.current?.goToHighlight(id),
@@ -78,7 +92,7 @@ export const PDFViewer: FC<PdfViewerProps> = ({
     if (!containerRef.current) return;
 
     setIsViewerReady(false);
-    setIsHighlightInit(false);
+    setIsZoomApplied(false);
     if (viewerRef.current) {
       viewerRef.current.destroy();
       viewerRef.current = null;
@@ -86,6 +100,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
 
     let viewer: PDFHighlightViewer | null = null;
     let mounted = true;
+
+    const handleZoomChanged = () => {
+      if (mounted) setIsZoomApplied(true);
+    };
 
     const initViewer = async () => {
       try {
@@ -95,11 +113,14 @@ export const PDFViewer: FC<PdfViewerProps> = ({
           enableTextSelection: true,
           enableVirtualScrolling: true,
           bboxOrigin: 'top-left',
+          ...viewerOptionsRef.current,
         });
         if (!mounted) {
           viewer.destroy();
           return;
         }
+
+        viewer.addEventListener('zoomChanged', handleZoomChanged);
 
         await viewer.loadPDF(pdf, { selectedPages });
         if (!mounted) {
@@ -130,7 +151,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
 
     return () => {
       mounted = false;
-      if (viewer) viewer.destroy();
+      if (viewer) {
+        viewer.removeEventListener('zoomChanged', handleZoomChanged);
+        viewer.destroy();
+      }
     };
   }, [pdf, selectedPages]);
 
@@ -146,14 +170,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   }, [autoFocusFirstHighlight, goTo, highlights, isViewerReady]);
 
   useEffect(() => {
-    setIsHighlightInit(true);
-  }, [highlights]);
-
-  useEffect(() => {
-    if (isViewerReady && isHighlightInit && selectedHighlightId) {
+    if (isViewerReady && isZoomApplied && selectedHighlightId) {
       goTo(selectedHighlightId);
     }
-  }, [goTo, isViewerReady, isHighlightInit, selectedHighlightId]);
+  }, [goTo, isViewerReady, isZoomApplied, selectedHighlightId]);
 
   useEffect(() => {
     if (!isViewerReady || !zoom) return;
