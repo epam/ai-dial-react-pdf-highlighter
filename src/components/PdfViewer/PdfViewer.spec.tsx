@@ -14,20 +14,31 @@ import type { PdfViewerApi } from '@/models/pdf-viewer.models';
 import { PDFViewer } from './PdfViewer';
 
 vi.mock('@epam/pdf-highlighter-kit', () => ({
-  PDFHighlightViewer: vi.fn().mockImplementation(() => ({
-    init: vi.fn().mockResolvedValue(undefined),
-    loadPDF: vi.fn().mockResolvedValue(undefined),
-    destroy: vi.fn(),
-    loadHighlights: vi.fn(),
-    setZoom: vi.fn(),
-    setPage: vi.fn(),
-    goToHighlight: vi.fn(),
-    getZoom: vi.fn(() => 1),
-    zoomIn: vi.fn(),
-    zoomOut: vi.fn(),
-    getThumbnailsDataUrl: vi.fn().mockResolvedValue(new Map()),
-    getTotalPages: vi.fn(() => 5),
-  })),
+  PDFHighlightViewer: vi.fn().mockImplementation(() => {
+    const handlers: Record<string, (() => void)[]> = {};
+    return {
+      init: vi.fn().mockResolvedValue(undefined),
+      loadPDF: vi.fn().mockResolvedValue(undefined),
+      destroy: vi.fn(),
+      loadHighlights: vi.fn(),
+      setZoom: vi.fn(),
+      setPage: vi.fn(),
+      goToHighlight: vi.fn(),
+      getZoom: vi.fn(() => 1),
+      zoomIn: vi.fn(),
+      zoomOut: vi.fn(),
+      getThumbnailsDataUrl: vi.fn().mockResolvedValue(new Map()),
+      getTotalPages: vi.fn(() => 5),
+      addEventListener: vi.fn((event: string, handler: () => void) => {
+        handlers[event] = handlers[event] ?? [];
+        handlers[event].push(handler);
+        if (event === 'zoomChanged') {
+          setTimeout(handler, 0);
+        }
+      }),
+      removeEventListener: vi.fn(),
+    };
+  }),
   ZoomMode: { AUTO: 'auto', PAGE_FIT: 'page-fit' },
 }));
 
