@@ -205,6 +205,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
       zoomOut: () => viewer.zoomOut(),
       getZoom: () => viewer.getZoom(),
       navigateToPage: (page) => viewer.setPage?.(page),
+      setPageDisplayRotation: (pageNumber, degrees, direction) =>
+        viewer.setPageDisplayRotation(pageNumber, degrees, direction),
+      getPageDisplayRotation: (pageNumber) =>
+        viewer.getPageDisplayRotation(pageNumber),
     });
   }, [isViewerReady]);
 

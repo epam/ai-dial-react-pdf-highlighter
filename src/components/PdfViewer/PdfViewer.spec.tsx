@@ -8,7 +8,11 @@ import {
   vi,
 } from 'vitest';
 
-import { PDFHighlightViewer, ZoomMode } from '@epam/pdf-highlighter-kit';
+import {
+  PDFHighlightViewer,
+  RotationDirection,
+  ZoomMode,
+} from '@epam/pdf-highlighter-kit';
 
 import type { PdfViewerApi } from '@/models/pdf-viewer.models';
 import { PDFViewer } from './PdfViewer';
@@ -28,6 +32,8 @@ vi.mock('@epam/pdf-highlighter-kit', () => ({
       zoomIn: vi.fn(),
       zoomOut: vi.fn(),
       getThumbnailsDataUrl: vi.fn().mockResolvedValue(new Map()),
+      setPageDisplayRotation: vi.fn(),
+      getPageDisplayRotation: vi.fn(() => 0),
       getTotalPages: vi.fn(() => 5),
       addEventListener: vi.fn((event: string, handler: () => void) => {
         handlers[event] = handlers[event] ?? [];
@@ -40,6 +46,10 @@ vi.mock('@epam/pdf-highlighter-kit', () => ({
     };
   }),
   ZoomMode: { AUTO: 'auto', PAGE_FIT: 'page-fit' },
+  RotationDirection: {
+    Clockwise: 'cw',
+    CounterClockwise: 'ccw',
+  },
 }));
 
 const MockViewerClass = PDFHighlightViewer as unknown as MockInstance;
@@ -237,5 +247,15 @@ describe('PDFViewer', () => {
     expect(instance.getThumbnailsDataUrl).toHaveBeenCalledWith([1, 2], {
       maxWidth: 104,
     });
+
+    api.setPageDisplayRotation(2, 90, RotationDirection.Clockwise);
+    expect(instance.setPageDisplayRotation).toHaveBeenCalledWith(
+      2,
+      90,
+      RotationDirection.Clockwise,
+    );
+
+    api.getPageDisplayRotation(2);
+    expect(instance.getPageDisplayRotation).toHaveBeenCalledWith(2);
   });
 });

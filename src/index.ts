@@ -22,6 +22,8 @@ export type { PageThumbnailProps } from './components/PageThumbnail/PageThumbnai
 export type { PdfViewerApi } from './models/pdf-viewer.models';
 export type { ZoomOption } from './models/pdf-viewer.models';
 export type { ViewerOptions } from '@epam/pdf-highlighter-kit';
+export { RotationDirection } from '@epam/pdf-highlighter-kit';
+export type { PageRotationDegrees } from '@epam/pdf-highlighter-kit';
 
 // Constants
 export {
