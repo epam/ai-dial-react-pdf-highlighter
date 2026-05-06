@@ -1,4 +1,8 @@
-import type { ThumbnailOptions } from '@epam/pdf-highlighter-kit';
+import type {
+  PageRotationDegrees,
+  RotationDirection,
+  ThumbnailOptions,
+} from '@epam/pdf-highlighter-kit';
 
 /**
  * Imperative API exposed by {@link PDFViewer} through the `onViewerReady` callback.
@@ -22,6 +26,14 @@ export interface PdfViewerApi {
   getZoom: () => number;
   /** Navigates to a specific 1-based page number. */
   navigateToPage: (page: number) => void;
+  /** Sets extra clockwise display rotation for a 1-based page (on top of PDF `/Rotate`). */
+  setPageDisplayRotation: (
+    pageNumber: number,
+    degrees: PageRotationDegrees,
+    direction?: RotationDirection,
+  ) => void;
+  /** Returns extra clockwise display rotation for a 1-based page. */
+  getPageDisplayRotation: (pageNumber: number) => PageRotationDegrees;
 }
 
 export interface ZoomOption {
