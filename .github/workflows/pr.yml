@@ -5,6 +5,7 @@ on:
     branches: [development, release-*]
 
 permissions:
+  id-token: write
   contents: read
   security-events: write
 
