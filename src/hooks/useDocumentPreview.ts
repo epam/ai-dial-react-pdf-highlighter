@@ -49,15 +49,18 @@ export const useDocumentPreview = ({
   const [zoom, setZoom] = useState(AUTO_ZOOM_ID);
 
   const isSupportedFile = useMemo(() => {
-    let value = fileName || fileUrl;
-    if (!fileName) {
-      try {
-        value = new URL(fileUrl).pathname;
-      } catch {
-        value = fileUrl.split('?')[0].split('#')[0];
-      }
+    if (fileName) {
+      return isPdfFile(fileName.toLowerCase());
     }
-    return isPdfFile(value.toLowerCase());
+    let pathname: string;
+    try {
+      pathname = new URL(fileUrl).pathname;
+    } catch {
+      pathname = fileUrl.split('?')[0].split('#')[0];
+    }
+    const lastSegment = pathname.split('/').pop() ?? '';
+    const hasExtension = lastSegment.includes('.');
+    return !hasExtension || isPdfFile(lastSegment.toLowerCase());
   }, [fileName, fileUrl]);
 
   const changeIndex = useCallback(
