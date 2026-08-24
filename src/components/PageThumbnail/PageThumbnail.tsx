@@ -1,4 +1,4 @@
-import { DialCheckbox, DialLoader, mergeClasses } from '@epam/ai-dial-ui-kit';
+import { Checkbox, mergeClasses, Spinner } from '@epam/ai-dial-ui-kit';
 import { type FC } from 'react';
 
 /**
@@ -65,17 +65,17 @@ export const PageThumbnail: FC<PageThumbnailProps> = ({
         ) : null}
         {isMultiselect && (
           <div className="absolute left-1 top-1 z-10" data-checkbox-wrapper>
-            <DialCheckbox
+            <Checkbox
               id={`page-thumbnail-${pageNum}`}
-              checked={isSelected}
+              isSelected={isSelected}
               onChange={() => onSelectPage(pageNum)}
-              className="before:border-primary before:bg-model-icon bg-model-icon"
+              aria-label={`Select page ${pageNum}`}
             />
           </div>
         )}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-blackout rounded-sm">
-            <DialLoader
+            <Spinner
               size={24}
               fullWidth={false}
               ariaLabel={`Loading page ${pageNum}`}
