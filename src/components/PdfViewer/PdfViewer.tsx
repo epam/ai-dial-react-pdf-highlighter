@@ -216,7 +216,7 @@ export const PDFViewer: FC<PdfViewerProps> = ({
     <div
       ref={containerRef}
       className={mergeClasses(
-        'grow min-w-0 overflow-auto bg-layer-3',
+        'grow min-w-0 overflow-auto bg-layer-raised',
         containerClassName,
       )}
     />

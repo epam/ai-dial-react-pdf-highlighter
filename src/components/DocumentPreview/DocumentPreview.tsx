@@ -1,10 +1,9 @@
 import {
-  DialButton,
-  DialEllipsisTooltip,
-  DialSelect,
   ElementSize,
+  EllipsisTooltip,
+  IconButton,
   mergeClasses,
-  SelectSize,
+  Select,
 } from '@epam/ai-dial-ui-kit';
 import type {
   InputHighlightData,
@@ -139,13 +138,13 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
   return (
     <div
       className={mergeClasses(
-        'flex flex-col self-center gap-4 py-3 px-6 h-full w-full bg-layer-2',
+        'flex flex-col self-center gap-4 py-3 px-6 h-full w-full bg-layer-sunken',
         containerClassName,
       )}
     >
       {fileName && (
         <div className="shrink-0 min-h-0 w-full">
-          <DialEllipsisTooltip
+          <EllipsisTooltip
             className="dial-tiny-text text-secondary"
             text={fileName}
           />
@@ -159,7 +158,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
       >
         <div>
           {showOccurrences ? (
-            <div className="flex gap-1 py-0.5 px-1.5 min-h-[26px] items-center bg-layer-4 rounded w-fit">
+            <div className="flex gap-1 py-0.5 px-1.5 min-h-[26px] items-center bg-layer-raised rounded w-fit">
               <span className="dial-small-text">
                 {occurrencesLabel ?? 'Occurrences'}:
                 <span className="pl-0.5 min-w-3 inline-block text-right">
@@ -171,17 +170,17 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
 
               {highlights.length > 0 && (
                 <>
-                  <DialButton
+                  <IconButton
                     className="p-0 text-primary !h-6.5"
                     size={ElementSize.Small}
-                    iconAfter={<IconChevronDown size={16} />}
+                    icon={<IconChevronDown size={16} />}
                     aria-label="Next occurrence"
                     onClick={() => changeIndex(1)}
                   />
-                  <DialButton
+                  <IconButton
                     className="p-0 text-primary !h-6.5"
                     size={ElementSize.Small}
-                    iconAfter={<IconChevronUp size={16} />}
+                    icon={<IconChevronUp size={16} />}
                     aria-label="Previous occurrence"
                     onClick={() => changeIndex(-1)}
                   />
@@ -199,31 +198,34 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
           )}
         >
           {title != null && title !== '' && (
-            <DialEllipsisTooltip
+            <EllipsisTooltip
               text={title}
               className="dial-body-semi-text text-primary min-w-0"
             />
           )}
           <div className="flex gap-0.5 items-center shrink-0">
             <div className="h-6">
-              <DialSelect
-                size={SelectSize.Sm}
-                className="bg-layer-4 !py-0 h-6 min-h-6 dial-small-text max-h-full border-transparent hover:border-hover rounded"
+              <Select
+                size={ElementSize.Small}
+                ariaLabel="Zoom"
+                // 2.0 splits the scales: `className` is the outer container,
+                // the field styling belongs on `fieldClassName`.
+                fieldClassName="bg-control-neutral !py-0 h-6 min-h-6 dial-small-text max-h-full border-transparent hover:border-accent-alpha rounded"
                 options={zoomSelectOptions}
                 value={zoom}
                 onChange={(v) => setZoom(v as string)}
               />
             </div>
-            <DialButton
-              className="py-0 flex items-center justify-center rounded text-primary bg-layer-4 border border-transparent hover:border-hover"
-              iconAfter={<IconMinus size={16} />}
+            <IconButton
+              className="py-0 rounded text-primary bg-control-neutral border border-transparent hover:border-accent-alpha"
+              icon={<IconMinus size={16} />}
               aria-label="Zoom out"
               size={ElementSize.Small}
               onClick={() => handleZoomChange(-1)}
             />
-            <DialButton
-              className="py-0 flex items-center justify-center rounded text-primary bg-layer-4 border border-transparent hover:border-hover"
-              iconAfter={<IconPlus size={16} />}
+            <IconButton
+              className="py-0 rounded text-primary bg-control-neutral border border-transparent hover:border-accent-alpha"
+              icon={<IconPlus size={16} />}
               aria-label="Zoom in"
               size={ElementSize.Small}
               onClick={() => handleZoomChange(1)}
@@ -255,7 +257,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
         {showLoader && <PdfPreviewLoader className="absolute inset-0 z-10" />}
 
         {isError && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-layer-3">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-layer-raised">
             <div className="flex flex-col items-center gap-6 p-10">
               <IconAlertTriangle
                 size={60}

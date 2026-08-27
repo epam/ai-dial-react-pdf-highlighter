@@ -1,194 +1,221 @@
+// Default color palette is light when no themes presented
+
 const backgroundsColors = {
   transparent: 'transparent',
-  'layer-0': 'var(--bg-layer-0, #000000)',
-  'layer-1': 'var(--bg-layer-1, #0C101D)',
-  'layer-2': 'var(--bg-layer-2, #161B2D)',
-  'layer-3': 'var(--bg-layer-3, #1D2439)',
-  'layer-4': 'var(--bg-layer-4, #242C42)',
-  blackout: 'var(--bg-blackout, #0C101DB3)',
-  error: 'var(--bg-error, #402027)',
-  warning: 'var(--bg-warning, #3F3D25)',
-  info: 'var(--bg-info, #1C2C47)',
-  success: 'var(--bg-success, #1D3841)',
-  'accent-primary-alpha': 'var(--bg-accent-primary-alpha, #7DA4FF26)',
-  'accent-secondary-alpha': 'var(--bg-accent-secondary-alpha, #37BABC2E)',
-  'accent-tertiary-alpha': 'var(--bg-accent-tertiary-alpha, #A972FF2E)',
+  'layer-sunken': 'var(--bg-layer-sunken, #EEF1F7)', // grey-150
+  'layer-base': 'var(--bg-layer-base, #F5F7FA)', // grey-100
+  'layer-raised': 'var(--bg-layer-raised, #FCFCFC)', // grey-50
+  error: 'var(--bg-error, #F3D6D8)', // red-100
+  warning: 'var(--bg-warning, #FAF0CF)', // yellow-100
+  info: 'var(--bg-info, #E1EAF9)', // blue-100
+  success: 'var(--bg-success, #DBF1EB)', // green-100
+  backdrop: 'var(--bg-backdrop, #161B2D4D)', // grey-1000 alpha-30
+};
 
-  'model-icon': 'var(--bg-model-icon, #FFFFFF)', // TODO: use?
-
-  // TODO: need review
-  'accent-primary': 'var(--bg-accent-primary, #5C8DEA)',
-  'accent-secondary': 'var(--bg-accent-secondary, #37BABC)',
-  'accent-tertiary': 'var(--bg-accent-tertiary, #A972FF)',
-
-  // TODO: need review and change names
-  'red-400': 'var(--bg-red-400, #F76464)',
-  'orange-400': 'var(--bg-orange-400, #D97C27)',
-  'orange-800': 'var(--bg-orange-800, #B25500)',
+const shadowColors = {
+  'xs-sm-1': 'var(--shadow-xs-sm-1, #2764D933)', // blue-500 alpha-20
+  'xs-sm-2': 'var(--shadow-xs-sm-2, #161B2D08)', // grey-1000 alpha-3
+  md: 'var(--shadow-md, #2764D90A)', // blue-500 alpha-4
+  lg: 'var(--shadow-lg, #2764D914)', // blue-500 alpha-8
 };
 
 const controlsBgColors = {
-  'controls-accent-primary': 'var(--controls-bg-accent-primary, #3664E2)',
-  'controls-accent-primary-hover':
-    'var(--controls-bg-accent-primary-hover, #2656D9)',
-  'controls-accent-primary-active':
-    'var(--controls-bg-accent-primary-active, #124ACE)',
-  'controls-accent-primary-alpha-active':
-    'var(--controls-bg-accent-primary-alpha-active, #7DA4FF4D)',
+  /*
+   * Accent gradient stops, numbered by position instead of being named after
+   * one gradient that uses them. The pre-0.14 ui-kit variable names stay in the
+   * fallback chain for themes that still set them.
+   */
+  'gradient-1': 'var(--bg-gradient-1, #1D4ED8)', // blue-500
+  'gradient-1-hover': 'var(--bg-gradient-1-hover, #6785FB)', // blue-200
+  'gradient-1-active': 'var(--bg-gradient-1-active, #1D4ED8)', // blue-500
+  'gradient-2': 'var(--bg-gradient-2, #885DF2)', // violet-300
+  'gradient-2-hover': 'var(--bg-gradient-2-hover, #885DF2)', // violet-300
+  'gradient-2-active': 'var(--bg-gradient-2-active, #7C3AED)', // violet-500
 
-  'controls-accent-secondary-alpha-active':
-    'var(--controls-bg-accent-secondary-alpha-active, #37BABC5C)',
+  'control-accent-alpha': 'var(--bg-control-accent-alpha, #2764D90F)', // blue-500 alpha-6
+  'control-accent-alpha-hover':
+    'var(--bg-control-accent-alpha-hover, #2764D924)', // blue-500 alpha-14
+  'control-accent-alpha-active':
+    'var(--bg-control-accent-alpha-active, #2764D933)', // blue-500 alpha-20
 
-  'controls-accent-tertiary-alpha-active':
-    'var(--controls-bg-accent-tertiary-alpha-active, #A972FF5C)',
+  'control-accent': 'var(--bg-control-accent, #1D4ED8)', // blue-500
+  'control-accent-hover': 'var(--bg-control-accent-hover, #5976E9)', // blue-300
 
-  'controls-error': 'var(--controls-bg-error, #CC4545)',
-  'controls-error-hover': 'var(--controls-bg-error-hover, #BF3939)',
-  'controls-error-active': 'var(--controls-bg-error-active, #AE2F2F)',
-  'controls-error-alpha-hover': 'var(--controls-bg-alpha-hover, #F764642E)',
-  'controls-error-alpha-active':
-    'var(--controls-bg-error-alpha-active, #F764645C)',
+  'control-neutral': 'var(--bg-control-neutral, #FCFCFC)', // grey-50
+  'control-neutral-hover-muted':
+    'var(--bg-control-neutral-hover-muted, var(--bg-control-neutral-hover, #E0E6F0))', // grey-250
+  'control-neutral-hover-strong':
+    'var(--bg-control-neutral-hover-strong, #848E9C)', // grey-600
+  'control-neutral-active': 'var(--bg-control-neutral-active, #D1DBEA)', // grey-350
+  'control-neutral-default': 'var(--bg-control-neutral-default, #ACB3C3)', // grey-450
+  'control-inverted': 'var(--bg-control-inverted, #57647A)', // grey-800
 
-  'controls-disable-accent': 'var(--controls-bg-disable-accent, #696E7C)',
-  'controls-disable': 'var(--controls-bg-disable, #242C42)',
+  'control-error': 'var(--bg-control-error, #AE2F2F)', // red-800
+  'control-error-hover': 'var(--bg-control-error-hover, #BF3939)', // red-700
+  'control-error-active': 'var(--bg-control-error-active, #CC4545)', // red-600
+  'control-error-alpha-hover': 'var(--bg-control-error-alpha-hover, #F764641A)', // red-800 alpha-10
+  'control-error-alpha-active':
+    'var(--bg-control-error-alpha-active, #F7646433)', // red-800 alpha-20
 
-  'controls-neutral-hover': 'var(--controls-bg-neutral-hover, #242C42)',
-  'controls-neutral-active': 'var(--controls-bg-neutral-active, #575F73)',
+  'control-disable-primary':
+    'var(--bg-control-disable-primary, var(--bg-control-disable, #DCE0E8))', // grey-300
+  'control-disable-secondary': 'var(--bg-control-disable-secondary, #ACB3C3)', // grey-450
+};
 
-  'controls-accent-success-alpha-hover':
-    'var(--controls-bg-accent-success-alpha-hover, #37BABC2E)',
-  'controls-accent-success-alpha-active':
-    'var(--controls-bg-accent-success-alpha-active, #37BABC5C)',
+const visualBgColors = {
+  blue: 'var(--bg-visual-blue, #D6EDF9)', // blue-50
+  'green-1': 'var(--bg-visual-green-1, #CDE8E5)', // green-200
+  'green-2': 'var(--bg-visual-green-2, #D1F0DC)', // green-300
+  brown: 'var(--bg-visual-brown, #FDE8D8)', // brown-300
+  red: 'var(--bg-visual-red, #FCE7F3)', // red-200
+  'violet-1': 'var(--bg-visual-violet-1, #DDE3F9)', // violet-100
+  'violet-2': 'var(--bg-visual-violet-2, #F1E9FF)', // violet-150
+};
 
-  // TODO: old names, need to remove
-  'controls-accent': 'var(--controls-bg-accent, #5C8DEA)',
-  'controls-accent-hover': 'var(--controls-bg-accent-hover, #4878D2)',
-  'controls-accent-alpha': 'var(--controls-bg-accent-alpha, #5C8DEA2B)',
-  'controls-enable-primary': 'var(--controls-enable-primary, #FCFCFC)',
+const visualTextColors = {
+  blue: 'var(--text-visual-blue, #1189C8)', // blue-250
+  'green-1': 'var(--text-visual-green-1, #059669)', // green-500
+  'green-2': 'var(--text-visual-green-2, #0D6E72)', // green-600
+  'green-3': 'var(--text-visual-green-3, #065F46)', // green-900
+  'brown-1': 'var(--text-visual-brown-1, #D36817)', // brown-400
+  'brown-2': 'var(--text-visual-brown-2, #B45309)', // brown-500
+  red: 'var(--text-visual-red, #9D174D)', // red-900
+  'violet-1': 'var(--text-visual-violet-1, #7C3AED)', // violet-500
+  'violet-2': 'var(--text-visual-violet-2, #3730B7)', // violet-800
 };
 
 const borderColors = {
   transparent: 'transparent',
-  primary: 'var(--stroke-primary, #696E7C)',
-  secondary: 'var(--stroke-secondary, #242C42)',
-  tertiary: 'var(--stroke-tertiary, #0C101D)',
-  focus: 'var(--stroke-focus, #EEF1F7)',
-  error: 'var(--stroke-error, #F76464)',
-  warning: 'var(--stroke-warning, #EEC840)',
-  info: 'var(--stroke-info, #7DA4FF)',
-  success: 'var(--stroke-success, #37BABC)',
-  'accent-primary': 'var(--stroke-accent-primary, #7DA4FF)',
-  'accent-secondary': 'var(--stroke-accent-secondary, #37BABC)',
-  'accent-tertiary': 'var(--stroke-accent-tertiary, #A972FF)',
+  primary: 'var(--stroke-primary, #57647A)', // grey-800
+  secondary: 'var(--stroke-secondary, #D1DBEA)', // grey-350
+  tertiary: 'var(--stroke-tertiary, #E0E6F0)', // grey-250
+  error: 'var(--stroke-error, #AE2F2F)', // red-800
+  warning: 'var(--stroke-warning, #EEC840)', // yellow-500
+  info: 'var(--stroke-info, #1D4ED8)', // blue-500
+  accent: 'var(--stroke-accent, #1D4ED8)', // blue-500
+  success: 'var(--stroke-success, #007274)', // green-800
+  'accent-primary': 'var(--stroke-accent-primary, var(--stroke-info, #1D4ED8))',
 
-  // TODO: need review
-  'controls-accent': 'var(--controls-bg-accent, #5C8DEA)',
-  'accent-primary-hover': 'var(--stroke-accent-primary-hover, #4878d2)',
-  hover: 'var(--stroke-hover, #EEF1F7)',
-  'red-900': 'var(--red-900, #402027)',
+  // controls
+  default: 'var(--stroke-default, #B2C2DD)', // grey-400
+  'accent-alpha': 'var(--stroke-accent-alpha, #2764D933)', // blue-500 alpha-20
+  'gradient-1': 'var(--stroke-gradient-1, #5976E9)', // blue-300
+  'gradient-2': 'var(--stroke-gradient-2, #885DF2)', // violet-300
+  focus: 'var(--stroke-focus-black, var(--stroke-focus, #161B2D))', // grey-1000
+  'accent-focus': 'var(--stroke-focus-blue, #6785FB)', // blue-200
+  'error-alpha': 'var(--stroke-error-alpha, #AE2F2F73)', // red-800 alpha-45
+  'control-disable-primary':
+    'var(--stroke-control-disable-primary, var(--text-control-disable-primary, var(--text-control-disable-alpha, #848E9C)))', // grey-600
 };
 
 const textColors = {
   transparent: 'transparent',
-  primary: 'var(--text-primary, #EEF1F7)',
-  secondary: 'var(--text-secondary, #9FA6BD)',
-  error: 'var(--text-error, #F76464)',
-  warning: 'var(--text-warning, #EEC840)',
-  'warning-icon': 'var(--text-warning-icon, #EEC840)',
-  info: 'var(--text-info, #7DA4FF)',
-  success: 'var(--text-success, #37BABC)',
-  'accent-primary': 'var(--text-accent-primary, #7DA4FF)',
-  'accent-secondary': 'var(--text-accent-secondary, #37BABC)',
-  'accent-tertiary': 'var(--text-accent-tertiary, #A972FF)',
-
-  // TODO: need review
-  'controls-disable': 'var(--controls-text-disable, #0C101D)',
+  primary: 'var(--text-primary, #161B2D)', // grey-1000
+  secondary: 'var(--text-secondary, #57647a)', // grey-800
+  tertiary: 'var(--text-tertiary, #848e9c)', // grey-600
+  accent: 'var(--text-accent, #1D4ED8)', // blue-500
+  error: 'var(--text-error, #AE2F2F)', // red-500
+  warning: 'var(--text-warning, #7F6300)', // yellow-800
+  'warning-icon': 'var(--text-warning-icon, #EEC840)', // yellow-500
+  info: 'var(--text-info, #1D4ED8)', // blue-500
+  success: 'var(--text-success, #007274)', // green-800
 };
 
 const placeholderColor = {
-  primary: 'var(--text-primary, #EEF1F7)',
-  secondary: 'var(--controls-text-secondary-disable, #575F73)',
+  primary: 'var(--text-primary, #161B2D)', // grey-1000
 };
 
 const controlsTextColors = {
-  'controls-permanent': 'var(--controls-text-permanent, #FCFCFC)',
-
-  'controls-accent-disable': 'var(--controls-text-accent-disable, #242C42)',
-  'controls-primary-disable': 'var(--controls-text-primary-disable, #7C8293)',
-  'controls-secondary-disable':
-    'var(--controls-text-secondary-disable, #575F73)',
-
-  'controls-neutral': 'var(--controls-text-neutral, #FCFCFC)',
-
-  'controls-accent-primary-hover':
-    'var(--controls-text-accent-primary-hover, #3664E2)',
-  'controls-accent-primary-active':
-    'var(--controls-text-accent-primary-active, #124ACE)',
-
-  // TODO: old names, need to remove
-  'controls-primary': 'var(--controls-primary, #FCFCFC)',
-  'controls-disable': 'var(--controls-text-disable, #575F73)',
+  'control-permanent': 'var(--text-control-permanent, #FCFCFC)', // grey-50
+  'control-inverted': 'var(--text-control-inverted, #FCFCFC)', // grey-50
+  'control-disable-primary':
+    'var(--text-control-disable-primary, var(--text-control-disable-alpha, #848E9C))', // grey-600
+  'control-disable-secondary':
+    'var(--text-control-disable-secondary, var(--text-control-disable-beta, #DCE0E8))', // grey-300
+  'control-accent-hover':
+    'var(--text-control-accent-hover, var(--text-control-blue-hover, #5976E9))', // blue-300
+  'control-accent-active':
+    'var(--text-control-accent-active, var(--text-control-blue-active, #6785FB))', // blue-200
 };
 
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
+  blocklist: ['[-:=]'],
   content: ['./src/**/*.{ts,tsx}', './src/**/*.scss'],
+
   theme: {
-    backgroundColor: { ...backgroundsColors, ...controlsBgColors },
+    backgroundColor: {
+      ...backgroundsColors,
+      ...controlsBgColors,
+      ...visualBgColors,
+    },
     borderColor: borderColors,
     stroke: borderColors,
     divideColor: borderColors,
     placeholderColor: placeholderColor,
-    textColor: { ...textColors, ...controlsTextColors },
+    textColor: {
+      ...textColors,
+      ...controlsTextColors,
+      ...visualTextColors,
+    },
     gradientColorStops: backgroundsColors,
+
     extend: {
-      animation: {
-        'spin-steps': 'spin 0.75s steps(8, end) infinite',
-        'skeleton-wave': 'skeleton-wave 3.5s ease-in-out infinite',
+      screens: {
+        mobile: { max: '768px' },
+        desktop: { min: '769px' },
+      },
+      /*
+       * `outline` emits a 1px solid ring and `outline-focus` paints it with the
+       * focus token — see the focus-visible states in buttons.scss. Kept in
+       * `extend` so the numeric widths (`outline-1`, still used in libs/*) stay.
+       */
+      outlineWidth: { DEFAULT: '1px' },
+      outlineColor: borderColors,
+      /*
+       * SVG fills paint surfaces (a tooltip arrow, a chart area), so the fill
+       * scale follows the background tokens the way `stroke` follows the border
+       * ones. Extended rather than replaced, so `fill-none` / `fill-current` stay.
+       */
+      fill: {
+        ...backgroundsColors,
+        ...controlsBgColors,
+        ...visualBgColors,
       },
       boxShadow: {
-        DEFAULT: '0 0 4px 0 var(--bg-blackout, #0C101DB3)',
+        // xs — Button-Pressed; sm — Button-Default, Side Panel
+        xs: `0 1px 4px 0 ${shadowColors['xs-sm-1']}, 0 1px 2px 0 ${shadowColors['xs-sm-2']}`,
+        sm: `0 2px 12px 0 ${shadowColors['xs-sm-1']}, 0 2px 6px 0 ${shadowColors['xs-sm-2']}`,
+        /*
+         * md — Button-Hover, Card-Default, Input; lg — Card-Hover. Both are a
+         * single wide blue layer: the grey layer would only muddy it at this
+         * size.
+         */
+        md: `0 8px 24px 0 ${shadowColors.md}`,
+        lg: `0 8px 44px 0 ${shadowColors.lg}`,
       },
       borderRadius: {
         DEFAULT: '4px',
       },
-      opacity: {
-        15: '15%',
-      },
-      colors: {
-        transparent: 'transparent',
-      },
-      fontFamily: {
-        DEFAULT: ['var(--theme-font, var(--font-inter))'],
-      },
-      fontSize: {
-        xxs: '10px',
-      },
       keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        /*
+         * Drives the PdfPreviewLoader shimmer: the gradient behind it is 200%
+         * wide, so sweeping backgroundPosition across it reads as a wave.
+         */
         'skeleton-wave': {
           '0%': { backgroundPosition: '200% 0' },
           '100%': { backgroundPosition: '-200% 0' },
         },
       },
-      typography: {
-        DEFAULT: {
-          css: {
-            color: 'var(--text-primary, #EEF1F7)',
-            a: {
-              color: 'var(--text-accent-primary, #7DA4FF)',
-            },
-            pre: {
-              border: 'none',
-              borderRadius: '0',
-              backgroundColor: 'transparent',
-            },
-          },
-        },
+      animation: {
+        fadeIn: 'fadeIn 100ms ease-in',
+        'skeleton-wave': 'skeleton-wave 3.5s ease-in-out infinite',
       },
     },
   },
   plugins: [],
-  corePlugins: {
-    preflight: false,
-  },
 };

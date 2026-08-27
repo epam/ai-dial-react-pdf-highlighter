@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { PageThumbnail } from './PageThumbnail';
 
 const DarkWrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="bg-layer-1 p-4 rounded">{children}</div>
+  <div className="bg-layer-base p-4 rounded">{children}</div>
 );
 
 const meta = {

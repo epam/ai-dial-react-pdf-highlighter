@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { DialButton, ElementSize, mergeClasses } from '@epam/ai-dial-ui-kit';
+import { Button, ElementSize, mergeClasses } from '@epam/ai-dial-ui-kit';
 import type { InputHighlightData } from '@epam/pdf-highlighter-kit';
 import { useRef, useState } from 'react';
 
@@ -273,8 +273,8 @@ const ThumbnailGenerationDemo = (
 
   return (
     <DocumentCacheProvider>
-      <div className="flex flex-row h-[700px] gap-3 bg-layer-1">
-        <div className="flex flex-col overflow-y-auto gap-2 bg-layer-2 rounded-sm flex-shrink-0 p-2">
+      <div className="flex flex-row h-[700px] gap-3 bg-layer-base">
+        <div className="flex flex-col overflow-y-auto gap-2 bg-layer-sunken rounded-sm flex-shrink-0 p-2">
           {thumbnails.size === 0 && (
             <span className="self-center text-xs text-secondary p-2">
               Thumbnails loading…
@@ -485,14 +485,14 @@ const DocumentSwitcherDemoComponent = () => {
 
   return (
     <DocumentCacheProvider>
-      <div className="flex h-[700px] gap-0 bg-layer-1">
+      <div className="flex h-[700px] gap-0 bg-layer-base">
         {/* Left panel — simulated results table */}
-        <div className="flex flex-col shrink-0 w-64 border-r border-divider bg-layer-2 overflow-y-auto p-2 gap-1">
+        <div className="flex flex-col shrink-0 w-64 border-r border-tertiary bg-layer-sunken overflow-y-auto p-2 gap-1">
           <p className="dial-tiny-text text-secondary px-2 py-1 uppercase tracking-wide">
             Search results
           </p>
           {TABLE_ROWS.map((row) => (
-            <DialButton
+            <Button
               key={`${row.fileUrl}::${row.highlightId}`}
               size={ElementSize.Small}
               label={row.label}
@@ -500,8 +500,8 @@ const DocumentSwitcherDemoComponent = () => {
                 'w-full !justify-start text-left px-2 py-1.5 rounded',
                 activeRow.highlightId === row.highlightId &&
                   activeRow.fileUrl === row.fileUrl
-                  ? 'bg-accent-primary-alpha text-accent-primary'
-                  : 'hover:bg-layer-4',
+                  ? 'bg-control-accent-alpha text-accent'
+                  : 'hover:bg-control-accent-alpha-hover',
               )}
               onClick={() => setActiveRow(row)}
             />
