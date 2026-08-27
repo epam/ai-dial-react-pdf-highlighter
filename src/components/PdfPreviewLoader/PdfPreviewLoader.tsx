@@ -12,7 +12,7 @@ export interface PdfPreviewLoaderProps {
 }
 
 const sectionLineClassName =
-  'h-4 rounded-[120px] bg-gradient-to-r from-layer-4 via-layer-3 to-layer-4 bg-[length:200%_100%] animate-skeleton-wave';
+  'h-4 rounded-[120px] bg-gradient-to-r from-layer-sunken via-layer-raised to-layer-sunken bg-[length:200%_100%] animate-skeleton-wave';
 
 /**
  * Skeleton placeholder used while PDF content is loading.
@@ -26,10 +26,10 @@ export const PdfPreviewLoader: FC<PdfPreviewLoaderProps> = ({
       role="status"
       aria-label={ariaLabel}
       aria-live="polite"
-      className={mergeClasses('h-full w-full bg-layer-3', className)}
+      className={mergeClasses('h-full w-full bg-layer-raised', className)}
     >
       <div className="flex h-full w-full flex-col gap-10 px-[60px] pt-10">
-        <div className="mx-auto h-4 w-[208px] max-w-[40%] rounded-[120px] bg-gradient-to-r from-layer-4 via-layer-3 to-layer-4 bg-[length:200%_100%] animate-skeleton-wave" />
+        <div className="mx-auto h-4 w-[208px] max-w-[40%] rounded-[120px] bg-gradient-to-r from-layer-sunken via-layer-raised to-layer-sunken bg-[length:200%_100%] animate-skeleton-wave" />
 
         <div className="flex flex-col gap-4">
           <div className={sectionLineClassName} />

@@ -267,9 +267,7 @@ describe('DocumentPreview', () => {
       ).not.toBeInTheDocument(),
     );
 
-    // Buttons: [DialSelect trigger (0), zoom-out (1), zoom-in (2)]
-    const [, , zoomInBtn] = screen.getAllByRole('button');
-    await user.click(zoomInBtn);
+    await user.click(screen.getByRole('button', { name: 'Zoom in' }));
 
     expect(mockViewerApi.getZoom).toHaveBeenCalled();
   });
@@ -284,9 +282,7 @@ describe('DocumentPreview', () => {
       ).not.toBeInTheDocument(),
     );
 
-    // Buttons: [DialSelect trigger (0), zoom-out (1), zoom-in (2)]
-    const [, zoomOutBtn] = screen.getAllByRole('button');
-    await user.click(zoomOutBtn);
+    await user.click(screen.getByRole('button', { name: 'Zoom out' }));
 
     expect(mockViewerApi.getZoom).toHaveBeenCalled();
   });
