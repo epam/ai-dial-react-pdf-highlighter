@@ -13,17 +13,17 @@ const backgroundsColors = {
 };
 
 const shadowColors = {
-  'xs-sm-1': 'var(--shadow-xs-sm-1, #2764D933)', // blue-500 alpha-20
-  'xs-sm-2': 'var(--shadow-xs-sm-2, #161B2D08)', // grey-1000 alpha-3
-  md: 'var(--shadow-md, #2764D90A)', // blue-500 alpha-4
+  'xs-1': 'var(--shadow-xs-1, #2764D933)', // blue-500 alpha-20
+  'xs-2': 'var(--shadow-xs-2, #161B2D08)', // grey-1000 alpha-3
+  sm: 'var(--shadow-sm, #2764D914)', // blue-500 alpha-8
+  md: 'var(--shadow-md, #2764D90F)', // blue-500 alpha-6
   lg: 'var(--shadow-lg, #2764D914)', // blue-500 alpha-8
 };
 
 const controlsBgColors = {
   /*
    * Accent gradient stops, numbered by position instead of being named after
-   * one gradient that uses them. The pre-0.14 ui-kit variable names stay in the
-   * fallback chain for themes that still set them.
+   * one gradient that uses them.
    */
   'gradient-1': 'var(--bg-gradient-1, #1D4ED8)', // blue-500
   'gradient-1-hover': 'var(--bg-gradient-1-hover, #6785FB)', // blue-200
@@ -57,8 +57,7 @@ const controlsBgColors = {
   'control-error-alpha-active':
     'var(--bg-control-error-alpha-active, #F7646433)', // red-800 alpha-20
 
-  'control-disable-primary':
-    'var(--bg-control-disable-primary, var(--bg-control-disable, #DCE0E8))', // grey-300
+  'control-disable-primary': 'var(--bg-control-disable-primary, #DCE0E8)', // grey-300
   'control-disable-secondary': 'var(--bg-control-disable-secondary, #ACB3C3)', // grey-450
 };
 
@@ -101,11 +100,12 @@ const borderColors = {
   'accent-alpha': 'var(--stroke-accent-alpha, #2764D933)', // blue-500 alpha-20
   'gradient-1': 'var(--stroke-gradient-1, #5976E9)', // blue-300
   'gradient-2': 'var(--stroke-gradient-2, #885DF2)', // violet-300
-  focus: 'var(--stroke-focus-black, var(--stroke-focus, #161B2D))', // grey-1000
-  'accent-focus': 'var(--stroke-focus-blue, #6785FB)', // blue-200
+  // `--stroke-focus` is the token name the design system settled on;
+  // `--stroke-focus-black` stays as a fallback for consumers still setting it.
+  focus: 'var(--stroke-focus, var(--stroke-focus-black, #161B2D))', // grey-1000
+  'accent-focus': 'var(--stroke-accent-focus, #6785FB)', // blue-200
   'error-alpha': 'var(--stroke-error-alpha, #AE2F2F73)', // red-800 alpha-45
-  'control-disable-primary':
-    'var(--stroke-control-disable-primary, var(--text-control-disable-primary, var(--text-control-disable-alpha, #848E9C)))', // grey-600
+  'control-disable-primary': 'var(--stroke-control-disable-primary, #848E9C)', // grey-600
 };
 
 const textColors = {
@@ -128,14 +128,10 @@ const placeholderColor = {
 const controlsTextColors = {
   'control-permanent': 'var(--text-control-permanent, #FCFCFC)', // grey-50
   'control-inverted': 'var(--text-control-inverted, #FCFCFC)', // grey-50
-  'control-disable-primary':
-    'var(--text-control-disable-primary, var(--text-control-disable-alpha, #848E9C))', // grey-600
-  'control-disable-secondary':
-    'var(--text-control-disable-secondary, var(--text-control-disable-beta, #DCE0E8))', // grey-300
-  'control-accent-hover':
-    'var(--text-control-accent-hover, var(--text-control-blue-hover, #5976E9))', // blue-300
-  'control-accent-active':
-    'var(--text-control-accent-active, var(--text-control-blue-active, #6785FB))', // blue-200
+  'control-disable-primary': 'var(--text-control-disable-primary, #848E9C)', // grey-600
+  'control-disable-secondary': 'var(--text-control-disable-secondary, #DCE0E8)', // grey-300
+  'control-accent-hover': 'var(--text-control-accent-hover, #5976E9)', // blue-300
+  'control-accent-active': 'var(--text-control-accent-active, #6785FB)', // blue-200
 };
 
 /** @type {import('tailwindcss').Config} */
@@ -183,19 +179,33 @@ module.exports = {
         ...visualBgColors,
       },
       boxShadow: {
-        // xs — Button-Pressed; sm — Button-Default, Side Panel
-        xs: `0 1px 4px 0 ${shadowColors['xs-sm-1']}, 0 1px 2px 0 ${shadowColors['xs-sm-2']}`,
-        sm: `0 2px 12px 0 ${shadowColors['xs-sm-1']}, 0 2px 6px 0 ${shadowColors['xs-sm-2']}`,
         /*
-         * md — Button-Hover, Card-Default, Input; lg — Card-Hover. Both are a
-         * single wide blue layer: the grey layer would only muddy it at this
-         * size.
+         * xs — Button-Pressed, the one step that still draws two layers, a wide
+         * blue over a tight grey. The resting shadow of a solid control has no
+         * step here: it used to be `sm`, and stayed where it was when `sm`
+         * moved onto the side panels, so the kit ships it as the unlayered
+         * `dial-kit-control-shadow` class rather than as a fifth key.
          */
+        xs: `0 1px 4px 0 ${shadowColors['xs-1']}, 0 1px 2px 0 ${shadowColors['xs-2']}`,
+        /*
+         * sm — Side Bar, Side Panel, right panel; md — Button-Hover,
+         * Card-Default, Input; lg — Card-Hover. All three are a single wide
+         * blue layer: the grey layer would only muddy it at this size.
+         */
+        sm: `0 8px 10px 0 ${shadowColors.sm}`,
         md: `0 8px 24px 0 ${shadowColors.md}`,
         lg: `0 8px 44px 0 ${shadowColors.lg}`,
       },
       borderRadius: {
         DEFAULT: '4px',
+        /*
+         * Control corner radii, themable like the color tokens above. Each
+         * falls back to the fully rounded pill the 2.0 controls ship with, so a
+         * host that sets nothing keeps today's look.
+         */
+        control: 'var(--radius-control, 9999px)',
+        'control-sm': 'var(--radius-control-small, 9999px)',
+        'control-icon': 'var(--radius-control-icon, 9999px)',
       },
       keyframes: {
         fadeIn: {
