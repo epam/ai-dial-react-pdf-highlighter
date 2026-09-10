@@ -19,7 +19,7 @@ import { PDFViewer } from './PdfViewer';
 
 vi.mock('@epam/pdf-highlighter-kit', () => ({
   PDFHighlightViewer: vi.fn().mockImplementation(() => {
-    const handlers: Record<string, (() => void)[]> = {};
+    const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
     return {
       init: vi.fn().mockResolvedValue(undefined),
       loadPDF: vi.fn().mockResolvedValue(undefined),
@@ -29,20 +29,33 @@ vi.mock('@epam/pdf-highlighter-kit', () => ({
       setPage: vi.fn(),
       goToHighlight: vi.fn(),
       getZoom: vi.fn(() => 1),
+      getCurrentPage: vi.fn(() => 1),
       zoomIn: vi.fn(),
       zoomOut: vi.fn(),
       getThumbnailsDataUrl: vi.fn().mockResolvedValue(new Map()),
       setPageDisplayRotation: vi.fn(),
       getPageDisplayRotation: vi.fn(() => 0),
       getTotalPages: vi.fn(() => 5),
-      addEventListener: vi.fn((event: string, handler: () => void) => {
-        handlers[event] = handlers[event] ?? [];
-        handlers[event].push(handler);
-        if (event === 'zoomChanged') {
-          setTimeout(handler, 0);
-        }
-      }),
-      removeEventListener: vi.fn(),
+      addEventListener: vi.fn(
+        (event: string, handler: (...args: unknown[]) => void) => {
+          handlers[event] = handlers[event] ?? [];
+          handlers[event].push(handler);
+          if (event === 'zoomChanged') {
+            setTimeout(handler, 0);
+          }
+        },
+      ),
+      removeEventListener: vi.fn(
+        (event: string, handler: (...args: unknown[]) => void) => {
+          handlers[event] = (handlers[event] ?? []).filter(
+            (h) => h !== handler,
+          );
+        },
+      ),
+      // Exposed for tests to trigger a scroll-driven page change directly.
+      __emit: (event: string, ...args: unknown[]) => {
+        (handlers[event] ?? []).forEach((h) => h(...args));
+      },
     };
   }),
   ZoomMode: { AUTO: 'auto', PAGE_FIT: 'page-fit' },
@@ -257,5 +270,57 @@ describe('PDFViewer', () => {
 
     api.getPageDisplayRotation(2);
     expect(instance.getPageDisplayRotation).toHaveBeenCalledWith(2);
+
+    api.getCurrentPage();
+    expect(instance.getCurrentPage).toHaveBeenCalled();
+  });
+
+  it('calls onCurrentPageChange when the viewer emits a scroll-driven pageChanged event', async () => {
+    const onCurrentPageChange = vi.fn();
+    render(
+      <PDFViewer
+        pdf={mockPdf}
+        highlights={[]}
+        onCurrentPageChange={onCurrentPageChange}
+      />,
+    );
+
+    const instance = await waitFor(() => {
+      expect(MockViewerClass.mock.results[0]?.value.init).toHaveBeenCalled();
+      return MockViewerClass.mock.results[0].value;
+    });
+
+    instance.__emit('pageChanged', {
+      currentPage: 2,
+      previousPage: 1,
+      totalPages: 5,
+    });
+
+    expect(onCurrentPageChange).toHaveBeenCalledWith(2);
+  });
+
+  it('does not call onCurrentPageChange after the viewer is destroyed', async () => {
+    const onCurrentPageChange = vi.fn();
+    const { unmount } = render(
+      <PDFViewer
+        pdf={mockPdf}
+        highlights={[]}
+        onCurrentPageChange={onCurrentPageChange}
+      />,
+    );
+
+    const instance = await waitFor(() => {
+      expect(MockViewerClass.mock.results[0]?.value.init).toHaveBeenCalled();
+      return MockViewerClass.mock.results[0].value;
+    });
+
+    unmount();
+    instance.__emit('pageChanged', {
+      currentPage: 3,
+      previousPage: 2,
+      totalPages: 5,
+    });
+
+    expect(onCurrentPageChange).not.toHaveBeenCalled();
   });
 });

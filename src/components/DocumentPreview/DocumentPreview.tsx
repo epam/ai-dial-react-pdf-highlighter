@@ -65,6 +65,12 @@ export interface DocumentPreviewProps {
   onThumbnailsLoaded?: (map: Map<number, string>) => void;
   /** Called when the underlying viewer is ready and its imperative API is available. */
   onViewerReady?: (api: PdfViewerApi) => void;
+  /**
+   * Called with the 1-based page number whenever the viewport's
+   * most-visible page changes, including changes driven by the reader
+   * scrolling the document rather than an explicit page navigation.
+   */
+  onCurrentPageChange?: (page: number) => void;
   /** Forces the loading overlay visible while parent-level work is in progress. */
   showLoaderOverlay?: boolean;
   /** Restricts viewer loading to selected pages only. */
@@ -104,6 +110,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
   thumbnailPageNumbers,
   onThumbnailsLoaded,
   onViewerReady,
+  onCurrentPageChange,
   showLoaderOverlay = false,
   selectedPages,
   selectedHighlightId,
@@ -248,6 +255,7 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
             zoom={zoom}
             onTotalPagesChange={onTotalPagesChange}
             onViewerReady={handleViewerReady}
+            onCurrentPageChange={onCurrentPageChange}
             containerClassName={pdfViewerClassName}
             selectedPages={selectedPages}
             viewerOptions={viewerOptions}

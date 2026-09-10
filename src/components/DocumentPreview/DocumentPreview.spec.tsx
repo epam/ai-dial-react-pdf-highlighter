@@ -302,6 +302,19 @@ describe('DocumentPreview', () => {
     expect(resultMap.get(1)).toBe('data:image/jpeg,thumb1');
   });
 
+  it('forwards onCurrentPageChange to PDFViewer', async () => {
+    const onCurrentPageChange = vi.fn();
+    renderDocumentPreview({ onCurrentPageChange });
+
+    const mockPDFViewer = vi.mocked(PDFViewer);
+    await waitFor(() => expect(mockPDFViewer).toHaveBeenCalled());
+
+    const lastProps = () =>
+      mockPDFViewer.mock.calls[mockPDFViewer.mock.calls.length - 1][0];
+
+    expect(lastProps().onCurrentPageChange).toBe(onCurrentPageChange);
+  });
+
   it('works without DocumentPreviewCacheProvider by calling loadFileCb directly', async () => {
     const loadFileCb = vi.fn().mockResolvedValue(mockBlob);
     renderDocumentPreviewWithoutCache({ loadFileCb });
