@@ -1,5 +1,9 @@
 import { mergeClasses } from '@epam/ai-dial-ui-kit';
-import type { PDFSource, ViewerOptions } from '@epam/pdf-highlighter-kit';
+import type {
+  PageChangeEvent,
+  PDFSource,
+  ViewerOptions,
+} from '@epam/pdf-highlighter-kit';
 import {
   type InputHighlightData,
   PDFHighlightViewer,
@@ -32,6 +36,12 @@ export interface PdfViewerProps {
   onTotalPagesChange?: (totalPages: number) => void;
   /** Callback invoked with an imperative API when viewer setup completes. */
   onViewerReady?: (api: PdfViewerApi) => void;
+  /**
+   * Callback invoked with the 1-based page number whenever the viewport's
+   * most-visible page changes, including page changes driven by the reader
+   * scrolling the document rather than an explicit `navigateToPage` call.
+   */
+  onCurrentPageChange?: (page: number) => void;
   /** Optional list of pages to load instead of the full document. */
   selectedPages?: number[];
   /**
@@ -58,6 +68,7 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   containerClassName,
   onTotalPagesChange,
   onViewerReady,
+  onCurrentPageChange,
   selectedPages,
   viewerOptions,
 }) => {
@@ -69,6 +80,7 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   const [isZoomApplied, setIsZoomApplied] = useState(false);
   const onTotalPagesChangeRef = useRef(onTotalPagesChange);
   const onViewerReadyRef = useRef(onViewerReady);
+  const onCurrentPageChangeRef = useRef(onCurrentPageChange);
   const viewerOptionsRef = useRef(viewerOptions);
 
   useEffect(() => {
@@ -78,6 +90,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   useEffect(() => {
     onViewerReadyRef.current = onViewerReady;
   }, [onViewerReady]);
+
+  useEffect(() => {
+    onCurrentPageChangeRef.current = onCurrentPageChange;
+  }, [onCurrentPageChange]);
 
   useEffect(() => {
     viewerOptionsRef.current = viewerOptions;
@@ -105,6 +121,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
       if (mounted) setIsZoomApplied(true);
     };
 
+    const handlePageChanged = (event: PageChangeEvent) => {
+      if (mounted) onCurrentPageChangeRef.current?.(event.currentPage);
+    };
+
     const initViewer = async () => {
       try {
         viewer = new PDFHighlightViewer();
@@ -121,6 +141,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
         }
 
         viewer.addEventListener('zoomChanged', handleZoomChanged);
+        viewer.addEventListener(
+          'pageChanged',
+          handlePageChanged as (...args: unknown[]) => void,
+        );
 
         await viewer.loadPDF(pdf, { selectedPages });
         if (!mounted) {
@@ -153,6 +177,10 @@ export const PDFViewer: FC<PdfViewerProps> = ({
       mounted = false;
       if (viewer) {
         viewer.removeEventListener('zoomChanged', handleZoomChanged);
+        viewer.removeEventListener(
+          'pageChanged',
+          handlePageChanged as (...args: unknown[]) => void,
+        );
         viewer.destroy();
       }
     };
@@ -204,6 +232,7 @@ export const PDFViewer: FC<PdfViewerProps> = ({
       zoomIn: () => viewer.zoomIn(),
       zoomOut: () => viewer.zoomOut(),
       getZoom: () => viewer.getZoom(),
+      getCurrentPage: () => viewer.getCurrentPage(),
       navigateToPage: (page) => viewer.setPage?.(page),
       setPageDisplayRotation: (pageNumber, degrees, direction) =>
         viewer.setPageDisplayRotation(pageNumber, degrees, direction),

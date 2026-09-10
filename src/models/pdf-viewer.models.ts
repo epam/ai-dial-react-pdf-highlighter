@@ -24,6 +24,8 @@ export interface PdfViewerApi {
   zoomOut: () => void;
   /** Returns the current numeric zoom value. */
   getZoom: () => number;
+  /** Returns the 1-based page number currently most visible in the viewport. */
+  getCurrentPage: () => number;
   /** Navigates to a specific 1-based page number. */
   navigateToPage: (page: number) => void;
   /** Sets extra clockwise display rotation for a 1-based page (on top of PDF `/Rotate`). */
