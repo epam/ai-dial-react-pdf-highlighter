@@ -7,7 +7,7 @@ context. It defines how AI assistants should work in this repository.
 
 - **What**: `@epam/ai-dial-react-pdf-highlighter` — React component library for PDF viewing and
   highlight annotation, wrapping `@epam/pdf-highlighter-kit` with a higher-level API.
-- **Stack**: React 18+, TypeScript strict, Vite library mode, Tailwind CSS, `@epam/ai-dial-ui-kit`
+- **Stack**: React 19.2+, TypeScript strict, Vite library mode, Tailwind CSS, `@epam/ai-dial-ui-kit`
   components, Storybook v10, Vitest.
 - **Published to**: npm as `@epam/ai-dial-react-pdf-highlighter`.
 - **Tests**: Vitest + React Testing Library (`npm run test:run`); see
