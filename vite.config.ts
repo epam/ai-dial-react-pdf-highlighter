@@ -4,7 +4,6 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
-import tailwindcss from 'tailwindcss';
 import { peerDependencies } from './package.json';
 
 export default defineConfig({
@@ -35,11 +34,6 @@ export default defineConfig({
           '@epam/pdf-highlighter-kit': 'PdfHighlighterKit',
         },
       },
-    },
-  },
-  css: {
-    postcss: {
-      plugins: [tailwindcss()],
     },
   },
 });
