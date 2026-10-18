@@ -1,3 +1,44 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+ * Same layer stack as `@epam/ai-dial-ui-kit`: Tailwind sits in the `ui` layer,
+ * so unlayered CSS (the host's styles, the kit's `dial-*` classes) always wins
+ * over a utility, and this library's utilities share the kit's layers.
+ */
+@layer ui.theme, ui.base, ui.components, ui.utilities;
+
+/*
+ * `reference inline` writes theme values straight into the utilities instead
+ * of declaring `--font-sans`, `--spacing`, `--radius-*`, `--color-*` on
+ * `:root`, so the host's own Tailwind v4 theme is never replaced.
+ */
+@import 'tailwindcss/theme.css' layer(ui.theme) theme(reference inline);
+/* The design tokens; after Tailwind's defaults, so their keys win. */
+@import './theme.scss';
+@import 'tailwindcss/preflight.css' layer(ui.base);
+@import 'tailwindcss/utilities.css' layer(ui.utilities) source(none);
+
+@source '../**/*.{ts,tsx}';
+
+/*
+ * Tailwind v3 preflight behaviour that v4 dropped, kept because the
+ * stylesheet's preflight reaches every element on the host page.
+ */
+@layer ui.base {
+  input::placeholder,
+  textarea::placeholder {
+    opacity: 1;
+    color: #9ca3af;
+  }
+
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  :disabled {
+    cursor: default;
+  }
+
+  dialog {
+    margin: auto;
+  }
+}

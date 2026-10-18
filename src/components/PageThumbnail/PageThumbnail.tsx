@@ -47,7 +47,7 @@ export const PageThumbnail: FC<PageThumbnailProps> = ({
         onSelectPage(pageNum);
       }}
       className={mergeClasses(
-        'flex flex-col gap-2 p-2 h-[186px] w-[120px] items-center justify-center cursor-pointer transition-colors hover:bg-control-accent-alpha-hover rounded-sm',
+        'flex flex-col gap-2 p-2 h-[186px] w-[120px] items-center justify-center cursor-pointer transition-colors hover:bg-control-accent-alpha-hover rounded-xs',
         isSelected &&
           (isMultiselect
             ? 'border border-accent bg-control-accent-alpha'
@@ -55,12 +55,12 @@ export const PageThumbnail: FC<PageThumbnailProps> = ({
         className,
       )}
     >
-      <div className="relative w-[104px] h-[146px] bg-layer-raised rounded-sm overflow-hidden">
+      <div className="relative w-[104px] h-[146px] bg-layer-raised rounded-xs overflow-hidden">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
             alt={`Page ${pageNum} thumbnail`}
-            className="w-full h-full object-cover rounded-sm"
+            className="w-full h-full object-cover rounded-xs"
           />
         ) : null}
         {isMultiselect && (
@@ -74,7 +74,7 @@ export const PageThumbnail: FC<PageThumbnailProps> = ({
           </div>
         )}
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-backdrop rounded-sm">
+          <div className="absolute inset-0 flex items-center justify-center bg-backdrop rounded-xs">
             <Spinner
               size={24}
               fullWidth={false}
