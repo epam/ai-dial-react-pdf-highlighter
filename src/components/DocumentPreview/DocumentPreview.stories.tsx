@@ -274,7 +274,7 @@ const ThumbnailGenerationDemo = (
   return (
     <DocumentCacheProvider>
       <div className="flex flex-row h-[700px] gap-3 bg-layer-base">
-        <div className="flex flex-col overflow-y-auto gap-2 bg-layer-sunken rounded-sm flex-shrink-0 p-2">
+        <div className="flex flex-col overflow-y-auto gap-2 bg-layer-sunken rounded-xs shrink-0 p-2">
           {thumbnails.size === 0 && (
             <span className="self-center text-xs text-secondary p-2">
               Thumbnails loading…

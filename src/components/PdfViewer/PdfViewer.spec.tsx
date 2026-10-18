@@ -18,7 +18,8 @@ import type { PdfViewerApi } from '@/models/pdf-viewer.models';
 import { PDFViewer } from './PdfViewer';
 
 vi.mock('@epam/pdf-highlighter-kit', () => ({
-  PDFHighlightViewer: vi.fn().mockImplementation(() => {
+  // A regular function, not an arrow: vitest 4 mocks are invoked with `new`.
+  PDFHighlightViewer: vi.fn().mockImplementation(function () {
     const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
     return {
       init: vi.fn().mockResolvedValue(undefined),
