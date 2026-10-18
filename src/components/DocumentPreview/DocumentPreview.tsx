@@ -178,14 +178,14 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
               {highlights.length > 0 && (
                 <>
                   <IconButton
-                    className="p-0 text-primary !h-6.5"
+                    className="p-0 text-primary h-6.5!"
                     size={ElementSize.Small}
                     icon={<IconChevronDown size={16} />}
                     aria-label="Next occurrence"
                     onClick={() => changeIndex(1)}
                   />
                   <IconButton
-                    className="p-0 text-primary !h-6.5"
+                    className="p-0 text-primary h-6.5!"
                     size={ElementSize.Small}
                     icon={<IconChevronUp size={16} />}
                     aria-label="Previous occurrence"
