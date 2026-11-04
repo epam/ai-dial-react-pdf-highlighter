@@ -239,17 +239,21 @@
   --placeholder-color-primary: var(--text-primary, #161b2d); /* grey-1000 */
 
   /*
-   * xs — Button-Pressed, the one step that still draws two layers, a wide
-   * blue over a tight grey. sm — Side Bar, Side Panel, right panel; md —
-   * Button-Hover, Card-Default, Input; lg — Card-Hover. All three are a single
-   * wide blue layer: the grey layer would only muddy it at this size.
+   * The DIAL Chat shadow scale (`tools/tailwind/theme.css` in ai-dial-chat),
+   * so a component looks the same here as inside the chat. xs is a single
+   * blue halo. sm and md are two layers, as the design's Shadow SM and
+   * Shadow MD: a drop from `--shadow-sm-2` / `--shadow-md-2` and a tight halo
+   * from `--shadow-sm-1` / `--shadow-md-1`. A theme that sets only the older
+   * single `--shadow-sm` / `--shadow-md` colour keeps it on the drop layer.
    */
-  --shadow-xs:
-    0 1px 4px 0 var(--shadow-xs-1, #2764d933),
-    0 1px 2px 0 var(--shadow-xs-2, #161b2d08); /* blue-500 alpha-20, grey-1000 alpha-3 */
-  --shadow-sm: 0 8px 10px 0 var(--shadow-sm, #2764d914); /* blue-500 alpha-8 */
-  --shadow-md: 0 8px 24px 0 var(--shadow-md, #2764d90f); /* blue-500 alpha-6 */
-  --shadow-lg: 0 8px 44px 0 var(--shadow-lg, #2764d914); /* blue-500 alpha-8 */
+  --shadow-xs: 0 0 8px 1px var(--shadow-xs-1, #2764d933); /* blue-500 alpha-20 */
+  --shadow-sm:
+    4px 9px 16px 1px var(--shadow-sm-2, var(--shadow-sm, #2764d90f)),
+    0 -2px 4px 2px var(--shadow-sm-1, #2764d90a); /* blue-500 alpha-6, blue-500 alpha-4 */
+  --shadow-md:
+    0 10px 30px 9px var(--shadow-md-2, var(--shadow-md, #2764d90f)),
+    0 0 8px 2px var(--shadow-md-1, #2764d90a); /* blue-500 alpha-6, blue-500 alpha-4 */
+  --shadow-lg: 1px 10px 25px 12px var(--shadow-lg, #2764d914); /* blue-500 alpha-8 */
 
   /*
    * `--radius` is the bare `rounded`. Control corner radii are themable like

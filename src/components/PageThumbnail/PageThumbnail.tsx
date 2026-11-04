@@ -48,10 +48,7 @@ export const PageThumbnail: FC<PageThumbnailProps> = ({
       }}
       className={mergeClasses(
         'flex flex-col gap-2 p-2 h-[186px] w-[120px] items-center justify-center cursor-pointer transition-colors hover:bg-control-accent-alpha-hover rounded-xs',
-        isSelected &&
-          (isMultiselect
-            ? 'border border-accent bg-control-accent-alpha'
-            : 'border border-primary'),
+        isSelected && 'bg-control-accent-alpha',
         className,
       )}
     >

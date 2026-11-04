@@ -241,11 +241,18 @@ export const PDFViewer: FC<PdfViewerProps> = ({
     });
   }, [isViewerReady]);
 
+  /*
+   * pdf-highlighter-kit adds `pdf-highlight-viewer` to this element and injects
+   * an unlayered `.pdf-highlight-viewer { background: #f5f5f5 }`, which beats
+   * any layered utility, so the override needs `!`. The viewer stays
+   * transparent and the pages sit on whatever surface the host (or
+   * `containerClassName`) provides.
+   */
   return (
     <div
       ref={containerRef}
       className={mergeClasses(
-        'grow min-w-0 overflow-auto bg-layer-raised',
+        'grow min-w-0 overflow-auto bg-transparent!',
         containerClassName,
       )}
     />
