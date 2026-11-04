@@ -1,20 +1,11 @@
 import storybook from 'eslint-plugin-storybook';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
-import { FlatCompat } from '@eslint/eslintrc';
 import tseslint from 'typescript-eslint';
 import reactRefresh from 'eslint-plugin-react-refresh';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
+import reactHooks from 'eslint-plugin-react-hooks';
+import prettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default defineConfig([
   globalIgnores([
@@ -29,13 +20,13 @@ export default defineConfig([
   storybook.configs['flat/recommended'],
   ...tseslint.configs.recommended,
   {
-    extends: compat.extends(
-      'eslint:recommended',
-      'plugin:prettier/recommended',
-      'plugin:react-hooks/recommended',
-      'plugin:@typescript-eslint/recommended',
-      'plugin:@typescript-eslint/stylistic',
-    ),
+    extends: [
+      js.configs.recommended,
+      prettierRecommended,
+      reactHooks.configs['recommended-latest'],
+      tseslint.configs.recommended,
+      tseslint.configs.stylistic,
+    ],
     languageOptions: {
       ecmaVersion: 5,
       globals: globals.browser,
