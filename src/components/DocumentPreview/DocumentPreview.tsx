@@ -218,6 +218,10 @@ export const DocumentPreview: FC<DocumentPreviewProps> = ({
                 // 2.0 splits the scales: `className` is the outer container,
                 // the field styling belongs on `fieldClassName`.
                 fieldClassName="bg-control-neutral !py-0 h-6 min-h-6 dial-small-text max-h-full border-transparent hover:border-accent-alpha rounded"
+                // The kit caps the list at the field's width (an important max-width set to
+                // the reference width); the field is only as wide as "Auto", so lift the cap
+                // and let the list fit its labels.
+                listClassName="max-w-none!"
                 options={zoomSelectOptions}
                 value={zoom}
                 onChange={(v) => setZoom(v as string)}
