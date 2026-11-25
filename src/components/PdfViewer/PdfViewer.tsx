@@ -2,7 +2,9 @@ import { mergeClasses } from '@epam/ai-dial-ui-kit';
 import type {
   PageChangeEvent,
   PDFSource,
+  RenderCompleteEvent,
   ViewerOptions,
+  ZoomValue,
 } from '@epam/pdf-highlighter-kit';
 import {
   type InputHighlightData,
@@ -11,6 +13,7 @@ import {
 } from '@epam/pdf-highlighter-kit';
 import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 
+import { PdfPreviewLoader } from '@/components/PdfPreviewLoader/PdfPreviewLoader';
 import { AUTO_ZOOM_ID, FIT_ZOOM_ID } from '@/constants/pdf-viewer.constants';
 import type { PdfViewerApi } from '@/models/pdf-viewer.models';
 
@@ -52,11 +55,83 @@ export interface PdfViewerProps {
   viewerOptions?: ViewerOptions;
 }
 
+const getZoomValue = (zoom?: string): ZoomValue | undefined => {
+  if (zoom === AUTO_ZOOM_ID) return ZoomMode.AUTO;
+  if (zoom === FIT_ZOOM_ID) return ZoomMode.PAGE_FIT;
+  if (!zoom) return undefined;
+  const value = parseFloat(zoom);
+  return !Number.isNaN(value) && value > 0 ? value : undefined;
+};
+
+/* zoomChanged signals the scale, not the completion of the asynchronous raster. */
+const applyInitialZoom = (
+  viewer: PDFHighlightViewer,
+  zoom: ZoomValue,
+  pageNumber: number,
+  signal: AbortSignal,
+): Promise<void> =>
+  new Promise((resolve, reject) => {
+    let zoomApplied = false;
+    const cleanup = () => {
+      viewer.removeEventListener('zoomChanged', handleZoom);
+      viewer.removeEventListener('renderComplete', handleRender);
+      viewer.removeEventListener('renderError', handleError);
+      signal.removeEventListener('abort', handleAbort);
+    };
+    const handleZoom = () => {
+      zoomApplied = true;
+    };
+    const handleRender = (event?: unknown) => {
+      if (
+        zoomApplied &&
+        (event as RenderCompleteEvent)?.pageNumber === pageNumber
+      ) {
+        cleanup();
+        resolve();
+      }
+    };
+    const handleError = (event?: unknown) => {
+      const error = event as { pageNumber?: number; error?: unknown };
+      if (error?.pageNumber === pageNumber) {
+        cleanup();
+        reject(error.error);
+      }
+    };
+    const handleAbort = () => {
+      cleanup();
+      resolve();
+    };
+
+    if (signal.aborted) {
+      resolve();
+      return;
+    }
+    viewer.addEventListener('zoomChanged', handleZoom);
+    viewer.addEventListener('renderComplete', handleRender);
+    viewer.addEventListener('renderError', handleError);
+    signal.addEventListener('abort', handleAbort, { once: true });
+    try {
+      viewer.setZoom(zoom);
+    } catch (error) {
+      cleanup();
+      reject(error);
+    }
+  });
+
+type InitialViewerOptions = Pick<
+  PdfViewerProps,
+  | 'highlights'
+  | 'zoom'
+  | 'selectedHighlightId'
+  | 'autoFocusFirstHighlight'
+  | 'selectedPageNumber'
+>;
+
 /**
  * Low-level PDF viewer wrapper around `PDFHighlightViewer`.
  *
- * This component is intended for scenarios where only rendering/navigation logic is needed
- * without the higher-level toolbar and overlays from `DocumentPreview`.
+ * This component handles rendering/navigation without the higher-level toolbar from
+ * `DocumentPreview`, and shows a skeleton loading view until initialization completes.
  */
 export const PDFViewer: FC<PdfViewerProps> = ({
   pdf,
@@ -75,6 +150,7 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<PDFHighlightViewer | null>(null);
   const [isViewerReady, setIsViewerReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   // Becomes true after the first zoomChanged event fires, meaning the initial
   // AUTO / PAGE_FIT zoom has fully resolved before any highlight navigation.
   const [isZoomApplied, setIsZoomApplied] = useState(false);
@@ -82,6 +158,30 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   const onViewerReadyRef = useRef(onViewerReady);
   const onCurrentPageChangeRef = useRef(onCurrentPageChange);
   const viewerOptionsRef = useRef(viewerOptions);
+  const initialOptionsRef = useRef<InitialViewerOptions>({
+    highlights,
+    zoom,
+    selectedHighlightId,
+    autoFocusFirstHighlight,
+    selectedPageNumber,
+  });
+  const appliedOptionsRef = useRef<InitialViewerOptions | null>(null);
+
+  useEffect(() => {
+    initialOptionsRef.current = {
+      highlights,
+      zoom,
+      selectedHighlightId,
+      autoFocusFirstHighlight,
+      selectedPageNumber,
+    };
+  }, [
+    highlights,
+    zoom,
+    selectedHighlightId,
+    autoFocusFirstHighlight,
+    selectedPageNumber,
+  ]);
 
   useEffect(() => {
     onTotalPagesChangeRef.current = onTotalPagesChange;
@@ -108,7 +208,9 @@ export const PDFViewer: FC<PdfViewerProps> = ({
     if (!containerRef.current) return;
 
     setIsViewerReady(false);
+    setIsLoading(true);
     setIsZoomApplied(false);
+    appliedOptionsRef.current = null;
     if (viewerRef.current) {
       viewerRef.current.destroy();
       viewerRef.current = null;
@@ -116,6 +218,7 @@ export const PDFViewer: FC<PdfViewerProps> = ({
 
     let viewer: PDFHighlightViewer | null = null;
     let mounted = true;
+    const abortController = new AbortController();
 
     const handleZoomChanged = () => {
       if (mounted) setIsZoomApplied(true);
@@ -159,14 +262,62 @@ export const PDFViewer: FC<PdfViewerProps> = ({
           onTotalPagesChangeRef.current?.(totalPages);
         }
 
+        /* Apply navigation before fitting so mixed-size PDFs fit the target page.
+         * Repeat if the requested initial view changes while rendering is pending. */
+        while (mounted) {
+          const options = initialOptionsRef.current;
+          const zoomValue = getZoomValue(options.zoom);
+          const highlightId =
+            zoomValue !== undefined && options.selectedHighlightId
+              ? options.selectedHighlightId
+              : options.autoFocusFirstHighlight
+                ? options.highlights[0]?.id
+                : undefined;
+          const highlight = options.highlights.find(
+            (h) => h.id === highlightId,
+          );
+          const targetPage =
+            options.selectedPageNumber ?? highlight?.bboxes?.[0]?.page;
+
+          viewer.loadHighlights(options.highlights);
+          if (targetPage) viewer.setPage(targetPage);
+          const pageNumber = viewer.getCurrentPage();
+          if (zoomValue !== undefined) {
+            await applyInitialZoom(
+              viewer,
+              zoomValue,
+              pageNumber,
+              abortController.signal,
+            );
+          } else {
+            await viewer.preloadPages([pageNumber]);
+          }
+          if (!mounted) return;
+
+          if (highlightId && !options.selectedPageNumber) {
+            viewer.goToHighlight(highlightId);
+            await viewer.preloadPages([viewer.getCurrentPage()]);
+          }
+          if (!mounted) return;
+          if (options !== initialOptionsRef.current) continue;
+          appliedOptionsRef.current = {
+            ...options,
+            selectedHighlightId:
+              zoomValue !== undefined ? options.selectedHighlightId : undefined,
+          };
+          break;
+        }
+
         if (mounted) {
           viewerRef.current = viewer;
           setIsViewerReady(true);
+          setIsLoading(false);
         }
       } catch (err) {
         if (!mounted) {
           return;
         }
+        setIsLoading(false);
         console.error('Error in initViewer:', err);
       }
     };
@@ -175,6 +326,7 @@ export const PDFViewer: FC<PdfViewerProps> = ({
 
     return () => {
       mounted = false;
+      abortController.abort();
       if (viewer) {
         viewer.removeEventListener('zoomChanged', handleZoomChanged);
         viewer.removeEventListener(
@@ -187,40 +339,58 @@ export const PDFViewer: FC<PdfViewerProps> = ({
   }, [pdf, selectedPages]);
 
   useEffect(() => {
-    if (!isViewerReady || !viewerRef.current) {
+    const applied = appliedOptionsRef.current;
+    if (
+      !isViewerReady ||
+      !viewerRef.current ||
+      !applied ||
+      (applied.highlights === highlights &&
+        applied.autoFocusFirstHighlight === autoFocusFirstHighlight)
+    ) {
       return;
     }
 
     viewerRef.current.loadHighlights(highlights);
+    applied.highlights = highlights;
+    applied.autoFocusFirstHighlight = autoFocusFirstHighlight;
     if (autoFocusFirstHighlight && highlights && highlights[0]) {
       goTo(highlights[0].id);
     }
   }, [autoFocusFirstHighlight, goTo, highlights, isViewerReady]);
 
   useEffect(() => {
-    if (isViewerReady && isZoomApplied && selectedHighlightId) {
+    const applied = appliedOptionsRef.current;
+    if (!isViewerReady || !applied) return;
+    if (
+      isZoomApplied &&
+      selectedHighlightId &&
+      applied.selectedHighlightId !== selectedHighlightId
+    ) {
       goTo(selectedHighlightId);
+      applied.selectedHighlightId = selectedHighlightId;
+    } else if (!selectedHighlightId) {
+      applied.selectedHighlightId = undefined;
     }
   }, [goTo, isViewerReady, isZoomApplied, selectedHighlightId]);
 
   useEffect(() => {
-    if (!isViewerReady || !zoom) return;
-    if (zoom === AUTO_ZOOM_ID) {
-      viewerRef.current?.setZoom?.(ZoomMode.AUTO);
-    } else if (zoom === FIT_ZOOM_ID) {
-      viewerRef.current?.setZoom?.(ZoomMode.PAGE_FIT);
-    } else {
-      const zoomValue = parseFloat(zoom);
-      if (!Number.isNaN(zoomValue) && zoomValue > 0) {
-        viewerRef.current?.setZoom?.(zoomValue);
-      }
-    }
+    const applied = appliedOptionsRef.current;
+    if (!isViewerReady || !applied || applied.zoom === zoom) return;
+    const value = getZoomValue(zoom);
+    if (value !== undefined) viewerRef.current?.setZoom(value);
+    applied.zoom = zoom;
   }, [isViewerReady, zoom]);
 
   useEffect(() => {
-    if (isViewerReady && selectedPageNumber) {
-      viewerRef.current?.setPage?.(selectedPageNumber);
+    const applied = appliedOptionsRef.current;
+    if (!isViewerReady || !applied) return;
+    if (
+      selectedPageNumber &&
+      applied.selectedPageNumber !== selectedPageNumber
+    ) {
+      viewerRef.current?.setPage(selectedPageNumber);
     }
+    applied.selectedPageNumber = selectedPageNumber;
   }, [isViewerReady, selectedPageNumber]);
 
   useEffect(() => {
@@ -250,11 +420,19 @@ export const PDFViewer: FC<PdfViewerProps> = ({
    */
   return (
     <div
-      ref={containerRef}
       className={mergeClasses(
-        'grow min-w-0 overflow-auto bg-transparent!',
+        'relative grow min-w-0 min-h-0',
         containerClassName,
       )}
-    />
+    >
+      <div
+        ref={containerRef}
+        inert={isLoading}
+        className="h-full min-w-0 overflow-auto bg-transparent!"
+      />
+      {isLoading && (
+        <PdfPreviewLoader className="absolute inset-0 z-10 overflow-hidden" />
+      )}
+    </div>
   );
 };

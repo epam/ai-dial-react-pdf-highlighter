@@ -66,6 +66,8 @@ npm install @epam/ai-dial-react-pdf-highlighter
 | Required | `react`, `react-dom`, `@epam/pdf-highlighter-kit`, `@epam/ai-dial-ui-kit`, `pdfjs-dist` | `npm install react react-dom @epam/pdf-highlighter-kit @epam/ai-dial-ui-kit pdfjs-dist` | `yarn add react react-dom @epam/pdf-highlighter-kit @epam/ai-dial-ui-kit pdfjs-dist` |
 | Optional (for `DocumentPreview`) | `@tabler/icons-react` | `npm install @tabler/icons-react` | `yarn add @tabler/icons-react` |
 
+`@epam/ai-dial-ui-kit` must be `0.17.0-dev.16` or newer to provide the skeleton loading components.
+
 Your `pdfjs-dist` version should satisfy [pdf-highlighter-kit requirements](https://github.com/epam/pdf-highlighter-kit?tab=readme-ov-file#requirements).
 
 
