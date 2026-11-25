@@ -69,6 +69,44 @@ export const WithSamplePdfLink: Story = {
     ),
   ],
 };
+export const ViewerInitialization: Story = {
+  ...WithSamplePdfLink,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Shows the PDF-shaped loading view built with UI kit Skeleton blocks and SkeletonShimmer ' +
+          'while the viewer initializes and loads the document. The skeleton stays visible until the initial zoom and destination page finish rendering; the covered viewer is inert.',
+      },
+    },
+  },
+};
+
+export const FixedHeightContainer: Story = {
+  ...ViewerInitialization,
+  args: {
+    ...WithSamplePdfLink.args,
+    containerClassName: 'h-full',
+    selectedPageNumber: 3,
+    zoom: 'page-fit',
+  },
+  decorators: [
+    (Story) => (
+      <div className="h-[500px]">
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Uses containerClassName="h-full" inside a fixed-height, non-flex parent. The root remains bounded while page 3 is fitted and rendered.',
+      },
+    },
+  },
+};
+
 export const WithSamplePdfBlob: Story = {
   parameters: {
     docs: {

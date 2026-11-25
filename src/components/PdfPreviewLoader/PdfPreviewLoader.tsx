@@ -1,4 +1,9 @@
-import { mergeClasses } from '@epam/ai-dial-ui-kit';
+import {
+  mergeClasses,
+  Skeleton,
+  SkeletonShimmer,
+  SkeletonVariant,
+} from '@epam/ai-dial-ui-kit';
 import { type FC } from 'react';
 
 /**
@@ -10,9 +15,6 @@ export interface PdfPreviewLoaderProps {
   /** Accessible label announced by assistive technologies. */
   ariaLabel?: string;
 }
-
-const sectionLineClassName =
-  'h-4 rounded-[120px] bg-linear-to-r from-layer-sunken via-layer-raised to-layer-sunken bg-[length:200%_100%] animate-skeleton-wave';
 
 /**
  * Skeleton placeholder used while PDF content is loading.
@@ -28,35 +30,34 @@ export const PdfPreviewLoader: FC<PdfPreviewLoaderProps> = ({
       aria-live="polite"
       className={mergeClasses('h-full w-full bg-layer-raised', className)}
     >
-      <div className="flex h-full w-full flex-col gap-10 px-[60px] pt-10">
-        <div className="mx-auto h-4 w-[208px] max-w-[40%] rounded-[120px] bg-linear-to-r from-layer-sunken via-layer-raised to-layer-sunken bg-[length:200%_100%] animate-skeleton-wave" />
+      <SkeletonShimmer className="flex w-full flex-col gap-10 px-[60px] pt-10">
+        <Skeleton
+          variant={SkeletonVariant.Text}
+          width={208}
+          height={16}
+          className="mx-auto max-w-[40%] bg-layer-sunken"
+        />
 
-        <div className="flex flex-col gap-4">
-          <div className={sectionLineClassName} />
-          <div className={sectionLineClassName} />
-          <div className={sectionLineClassName} />
-          <div className={sectionLineClassName} />
-          <div
-            className={mergeClasses(
-              sectionLineClassName,
-              'w-[28%] max-w-[320px]',
-            )}
-          />
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className={sectionLineClassName} />
-          <div className={sectionLineClassName} />
-          <div className={sectionLineClassName} />
-          <div className={sectionLineClassName} />
-          <div
-            className={mergeClasses(
-              sectionLineClassName,
-              'w-[58%] max-w-[520px]',
-            )}
-          />
-        </div>
-      </div>
+        {['28%', '58%'].map((lastLineWidth) => (
+          <div key={lastLineWidth} className="flex flex-col gap-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton
+                key={index}
+                variant={SkeletonVariant.Text}
+                width="100%"
+                height={16}
+                className="bg-layer-sunken"
+              />
+            ))}
+            <Skeleton
+              variant={SkeletonVariant.Text}
+              width={lastLineWidth}
+              height={16}
+              className="bg-layer-sunken"
+            />
+          </div>
+        ))}
+      </SkeletonShimmer>
     </div>
   );
 };

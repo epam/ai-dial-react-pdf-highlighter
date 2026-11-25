@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import {
   type MockInstance,
   beforeEach,
@@ -21,16 +21,32 @@ vi.mock('@epam/pdf-highlighter-kit', () => ({
   // A regular function, not an arrow: vitest 4 mocks are invoked with `new`.
   PDFHighlightViewer: vi.fn().mockImplementation(function () {
     const handlers: Record<string, ((...args: unknown[]) => void)[]> = {};
-    return {
-      init: vi.fn().mockResolvedValue(undefined),
+    let currentPage = 1;
+    const emit = (event: string, ...args: unknown[]) => {
+      (handlers[event] ?? []).forEach((handler) => handler(...args));
+    };
+    const viewer = {
+      init: vi.fn(async (container: HTMLElement) => {
+        container.tabIndex = 0;
+      }),
       loadPDF: vi.fn().mockResolvedValue(undefined),
+      preloadPages: vi.fn().mockResolvedValue(undefined),
       destroy: vi.fn(),
       loadHighlights: vi.fn(),
-      setZoom: vi.fn(),
-      setPage: vi.fn(),
+      setZoom: vi.fn(() => {
+        if (viewer.__autoZoom) emit('zoomChanged');
+        if (viewer.__autoRender) {
+          queueMicrotask(() =>
+            emit('renderComplete', { pageNumber: currentPage }),
+          );
+        }
+      }),
+      setPage: vi.fn((page: number) => {
+        if (page >= 1 && page <= 5) currentPage = page;
+      }),
       goToHighlight: vi.fn(),
       getZoom: vi.fn(() => 1),
-      getCurrentPage: vi.fn(() => 1),
+      getCurrentPage: vi.fn(() => currentPage),
       zoomIn: vi.fn(),
       zoomOut: vi.fn(),
       getThumbnailsDataUrl: vi.fn().mockResolvedValue(new Map()),
@@ -41,9 +57,6 @@ vi.mock('@epam/pdf-highlighter-kit', () => ({
         (event: string, handler: (...args: unknown[]) => void) => {
           handlers[event] = handlers[event] ?? [];
           handlers[event].push(handler);
-          if (event === 'zoomChanged') {
-            setTimeout(handler, 0);
-          }
         },
       ),
       removeEventListener: vi.fn(
@@ -53,11 +66,11 @@ vi.mock('@epam/pdf-highlighter-kit', () => ({
           );
         },
       ),
-      // Exposed for tests to trigger a scroll-driven page change directly.
-      __emit: (event: string, ...args: unknown[]) => {
-        (handlers[event] ?? []).forEach((h) => h(...args));
-      },
+      __autoZoom: true,
+      __autoRender: true,
+      __emit: emit,
     };
+    return viewer;
   }),
   ZoomMode: { AUTO: 'auto', PAGE_FIT: 'page-fit' },
   RotationDirection: {
@@ -78,6 +91,237 @@ describe('PDFViewer', () => {
   it('renders a container element', () => {
     const { container } = render(<PDFViewer pdf={mockPdf} highlights={[]} />);
     expect(container.firstChild).toBeInTheDocument();
+  });
+
+  it('shows skeleton blocks while the PDF loads and hides them when ready', async () => {
+    let resolvePDF!: () => void;
+    const pendingPDF = new Promise<void>((resolve) => {
+      resolvePDF = resolve;
+    });
+    render(<PDFViewer pdf={mockPdf} highlights={[]} />);
+    const instance = MockViewerClass.mock.results[0].value;
+    instance.loadPDF.mockReturnValueOnce(pendingPDF);
+
+    await waitFor(() => expect(instance.loadPDF).toHaveBeenCalled());
+    expect(
+      screen.getByRole('status', { name: 'pdf preview loading' }),
+    ).toBeInTheDocument();
+
+    await act(async () => resolvePDF());
+    expect(
+      screen.queryByRole('status', { name: 'pdf preview loading' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('keeps containerClassName on the root and fills it with the viewer surface', async () => {
+    const onViewerReady = vi.fn();
+    const { container } = render(
+      <PDFViewer
+        pdf={mockPdf}
+        highlights={[]}
+        containerClassName="h-full max-h-[500px] bg-layer-base"
+        onViewerReady={onViewerReady}
+      />,
+    );
+    const root = container.firstChild;
+    expect(root).toHaveClass('h-full', 'max-h-[500px]', 'bg-layer-base');
+    const surface = MockViewerClass.mock.results[0].value.init.mock.calls[0][0];
+    expect(surface.parentNode).toBe(root);
+    expect(surface).toHaveClass('h-full');
+    expect(surface).not.toHaveClass('max-h-[500px]');
+    await waitFor(() => expect(onViewerReady).toHaveBeenCalled());
+  });
+
+  it.each(['auto', 'page-fit', '1.5'])(
+    'keeps the viewer inert and covered until page 3 renders after %s zoom',
+    async (zoom) => {
+      const onViewerReady = vi.fn();
+      render(
+        <PDFViewer
+          pdf={mockPdf}
+          highlights={[]}
+          zoom={zoom}
+          selectedPageNumber={3}
+          onViewerReady={onViewerReady}
+        />,
+      );
+      const instance = MockViewerClass.mock.results[0].value;
+      instance.__autoZoom = false;
+      instance.__autoRender = false;
+      const surface = instance.init.mock.calls[0][0];
+      expect(surface).toHaveAttribute('inert');
+      expect(surface).not.toHaveAttribute('hidden');
+
+      await waitFor(() => expect(instance.setZoom).toHaveBeenCalled());
+      expect(instance.getCurrentPage()).toBe(3);
+      await act(async () => {
+        instance.__emit('renderComplete', { pageNumber: 3 });
+      });
+      expect(onViewerReady).not.toHaveBeenCalled();
+      await act(async () => {
+        instance.__emit('zoomChanged');
+        instance.__emit('renderComplete', { pageNumber: 1 });
+      });
+      expect(
+        screen.getByRole('status', { name: 'pdf preview loading' }),
+      ).toBeInTheDocument();
+      expect(surface).toHaveAttribute('inert');
+      expect(onViewerReady).not.toHaveBeenCalled();
+
+      await act(async () => {
+        instance.__emit('renderComplete', { pageNumber: 3 });
+      });
+      expect(onViewerReady).toHaveBeenCalledTimes(1);
+      expect(instance.setZoom).toHaveBeenCalledTimes(1);
+      expect(
+        screen.queryByRole('status', { name: 'pdf preview loading' }),
+      ).not.toBeInTheDocument();
+      expect(surface).not.toHaveAttribute('inert');
+    },
+  );
+
+  it('waits for the selected page without requiring a zoom event', async () => {
+    let resolvePage!: () => void;
+    const pendingPage = new Promise<void>((resolve) => {
+      resolvePage = resolve;
+    });
+    const onViewerReady = vi.fn();
+    render(
+      <PDFViewer
+        pdf={mockPdf}
+        highlights={[]}
+        selectedPageNumber={3}
+        onViewerReady={onViewerReady}
+      />,
+    );
+    const instance = MockViewerClass.mock.results[0].value;
+    instance.preloadPages.mockReturnValueOnce(pendingPage);
+    await waitFor(() =>
+      expect(instance.preloadPages).toHaveBeenCalledWith([3]),
+    );
+    expect(onViewerReady).not.toHaveBeenCalled();
+    expect(instance.setZoom).not.toHaveBeenCalled();
+    await act(async () => resolvePage());
+    expect(onViewerReady).toHaveBeenCalledTimes(1);
+  });
+
+  it('follows a changed initial destination before revealing the document', async () => {
+    const onViewerReady = vi.fn();
+    const highlights: Parameters<typeof PDFViewer>[0]['highlights'] = [];
+    const { rerender } = render(
+      <PDFViewer
+        pdf={mockPdf}
+        highlights={highlights}
+        zoom="auto"
+        selectedPageNumber={3}
+        onViewerReady={onViewerReady}
+      />,
+    );
+    const instance = MockViewerClass.mock.results[0].value;
+    instance.__autoRender = false;
+    await waitFor(() => expect(instance.setZoom).toHaveBeenCalledTimes(1));
+    rerender(
+      <PDFViewer
+        pdf={mockPdf}
+        highlights={highlights}
+        zoom="1.5"
+        selectedPageNumber={4}
+        onViewerReady={onViewerReady}
+      />,
+    );
+    await act(async () => {
+      instance.__emit('renderComplete', { pageNumber: 3 });
+    });
+    expect(instance.setPage).toHaveBeenLastCalledWith(4);
+    expect(onViewerReady).not.toHaveBeenCalled();
+    await act(async () => {
+      instance.__emit('renderComplete', { pageNumber: 4 });
+    });
+    expect(onViewerReady).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes pending render listeners when unmounted', async () => {
+    const onViewerReady = vi.fn();
+    const { unmount } = render(
+      <PDFViewer
+        pdf={mockPdf}
+        highlights={[]}
+        zoom="auto"
+        onViewerReady={onViewerReady}
+      />,
+    );
+    const instance = MockViewerClass.mock.results[0].value;
+    instance.__autoRender = false;
+    await waitFor(() => expect(instance.setZoom).toHaveBeenCalled());
+    unmount();
+    expect(instance.removeEventListener).toHaveBeenCalledWith(
+      'renderComplete',
+      expect.any(Function),
+    );
+    expect(instance.removeEventListener).toHaveBeenCalledWith(
+      'renderError',
+      expect.any(Function),
+    );
+    await act(async () => {
+      instance.__emit('renderComplete', { pageNumber: 1 });
+    });
+    expect(onViewerReady).not.toHaveBeenCalled();
+  });
+
+  it('stops loading when the initial zoom raster fails', async () => {
+    const error = new Error('Raster failed');
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const onViewerReady = vi.fn();
+    try {
+      render(
+        <PDFViewer
+          pdf={mockPdf}
+          highlights={[]}
+          zoom="auto"
+          onViewerReady={onViewerReady}
+        />,
+      );
+      const instance = MockViewerClass.mock.results[0].value;
+      instance.__autoRender = false;
+      await waitFor(() => expect(instance.setZoom).toHaveBeenCalled());
+      await act(async () => {
+        instance.__emit('renderError', { pageNumber: 1, error });
+      });
+      expect(consoleError).toHaveBeenCalledWith('Error in initViewer:', error);
+      expect(onViewerReady).not.toHaveBeenCalled();
+      expect(
+        screen.queryByRole('status', { name: 'pdf preview loading' }),
+      ).not.toBeInTheDocument();
+      expect(instance.init.mock.calls[0][0]).not.toHaveAttribute('inert');
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it('hides the loading view when PDF loading fails', async () => {
+    const error = new Error('Invalid PDF');
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    try {
+      render(<PDFViewer pdf={mockPdf} highlights={[]} />);
+      const instance = MockViewerClass.mock.results[0].value;
+      instance.loadPDF.mockRejectedValueOnce(error);
+
+      await waitFor(() => {
+        expect(consoleError).toHaveBeenCalledWith(
+          'Error in initViewer:',
+          error,
+        );
+        expect(
+          screen.queryByRole('status', { name: 'pdf preview loading' }),
+        ).not.toBeInTheDocument();
+      });
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 
   it('initializes PDFHighlightViewer and loads the PDF', async () => {
@@ -199,8 +443,14 @@ describe('PDFViewer', () => {
     rerender(
       <PDFViewer pdf={newPdf} highlights={[]} onViewerReady={onViewerReady} />,
     );
+    expect(
+      screen.getByRole('status', { name: 'pdf preview loading' }),
+    ).toBeInTheDocument();
 
     await waitFor(() => expect(onViewerReady).toHaveBeenCalledTimes(2));
+    expect(
+      screen.queryByRole('status', { name: 'pdf preview loading' }),
+    ).not.toBeInTheDocument();
     expect(firstInstance.destroy).toHaveBeenCalled();
   });
 
@@ -229,6 +479,7 @@ describe('PDFViewer', () => {
         pdf={mockPdf}
         highlights={[]}
         selectedHighlightId="highlight-42"
+        zoom="auto"
       />,
     );
 
